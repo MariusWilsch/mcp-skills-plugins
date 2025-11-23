@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { validatePluginSchema } = require('./plugin-schema');
 
 let hasErrors = false;
 
@@ -93,18 +94,18 @@ function validatePlugin(pluginEntry, index) {
     return;
   }
 
-  // Validate plugin.json structure
-  if (!pluginJson.name) {
-    error(`Plugin '${pluginName}' plugin.json missing: name`);
+  // Validate plugin.json against official schema
+  const schemaValidation = validatePluginSchema(pluginJson, pluginName);
+
+  if (schemaValidation.errors.length > 0) {
+    schemaValidation.errors.forEach(err => {
+      error(`Plugin '${pluginName}' schema error: ${err}`);
+    });
   }
 
-  if (!pluginJson.version) {
-    warning(`Plugin '${pluginName}' plugin.json missing: version`);
-  }
-
-  if (!pluginJson.description) {
-    warning(`Plugin '${pluginName}' plugin.json missing: description`);
-  }
+  schemaValidation.warnings.forEach(warn => {
+    warning(`Plugin '${pluginName}': ${warn}`);
+  });
 
   // Check for required directories/files
   const hasAgents = fs.existsSync(path.join(pluginPath, 'agents'));

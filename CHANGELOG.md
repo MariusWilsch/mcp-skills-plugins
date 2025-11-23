@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-11-23
+
+### Added
+- **Comprehensive plugin validation system**
+  - `scripts/plugin-schema.js` - Official Claude Code plugin schema definition
+  - `scripts/validate-plugin.js` - CLI tool for validating individual plugins
+  - Schema validation integrated into `scripts/validate-marketplace.js`
+  - New npm script: `npm run validate-plugin <plugin-dir>`
+
+### Changed
+- **Enhanced `/skill2plugin` command** with critical validation checkpoint (Step 11.5)
+  - Now runs `node scripts/validate-plugin.js` before adding plugin to marketplace
+  - Prevents committing plugins with invalid manifests
+  - Validates against official Claude Code plugin schema
+
+### Fixed
+- **chrome-devtools-plugin v0.5.0** - Removed invalid 'mcp' field from plugin.json
+  - Fixed installation error: "Unrecognized key(s) in object: 'mcp'"
+  - Plugin now conforms to official Claude Code plugin schema
+  - MCP server requirements documented in README instead of manifest
+
 ## [0.1.0] - 2025-11-23
 
 ### Added

@@ -370,6 +370,63 @@ Found an issue or have improvements? Please:
 MIT License - See repository for details.
 ```
 
+### Step 11.5: Validate Plugin Structure (CRITICAL)
+
+**IMPORTANT**: Validate the plugin before adding it to the marketplace!
+
+Use Bash to run the comprehensive plugin validator:
+```bash
+node scripts/validate-plugin.js ${PLUGIN_NAME}
+```
+
+**This validation checks:**
+- ✓ plugin.json conforms to official Claude Code plugin schema
+- ✓ No invalid fields (like 'mcp', 'mcpServer', etc.)
+- ✓ All required fields present
+- ✓ Field types are correct
+- ✓ Component directories exist (agents/, skills/, etc.)
+- ✓ Skills have valid SKILL.md files
+- ✓ Agents have proper frontmatter
+
+**If validation FAILS:**
+1. Display the validation errors to the user
+2. **DO NOT proceed to Step 12** (marketplace update)
+3. **DO NOT commit** the plugin
+4. Fix the errors in the plugin
+5. Re-run validation until it passes
+
+**If validation PASSES:**
+1. Display success message
+2. Proceed to Step 12
+
+**Example output:**
+```
+🔍 Validating plugin at: chrome-devtools-plugin
+
+✓ Found plugin.json
+✓ plugin.json is valid JSON
+
+Validating against official plugin schema...
+✗ Schema validation failed
+
+======================================================================
+
+❌ ERRORS:
+
+  • Invalid field 'mcp' - not part of official Claude Code plugin schema
+  • → Did you mean 'mcpServers'? Note: 'mcpServers' is only for plugins that bundle their own MCP server executables
+
+======================================================================
+
+❌ Validation FAILED for chrome-devtools-plugin
+
+Plugin at chrome-devtools-plugin has validation errors.
+Please fix the errors before installing or publishing the plugin.
+```
+
+**Why this step is critical:**
+This prevents publishing plugins with invalid manifests that will fail during installation. The v0.1.0 release had an invalid 'mcp' field that caused installation failures - this validation step would have caught it before publishing.
+
 ### Step 12: Update Marketplace Manifest
 
 Read the current marketplace.json:

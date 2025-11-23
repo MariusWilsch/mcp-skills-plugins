@@ -1,6 +1,6 @@
 {
   "name": "mcp-skills-plugins",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Claude Code plugins generated from MCP servers using mcp2rest. Each plugin provides agents and skills for interacting with MCP tools.",
   "owner": {
     "name": "ulasbilgen"

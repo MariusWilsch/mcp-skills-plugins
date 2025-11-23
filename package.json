@@ -1,10 +1,11 @@
 {
   "name": "mcp-skills-plugins",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Claude Code plugins marketplace for MCP server integrations",
   "private": true,
   "scripts": {
     "validate": "node scripts/validate-marketplace.js",
+    "validate-plugin": "node scripts/validate-plugin.js",
     "list-plugins": "node scripts/list-plugins.js",
     "test": "npm run validate"
   },
