@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * MCP REST Client for chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ *
  * Shared MCP REST client for tool scripts.
  */
 

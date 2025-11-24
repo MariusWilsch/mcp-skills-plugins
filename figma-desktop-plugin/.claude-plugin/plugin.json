@@ -1,7 +1,7 @@
 {
   "name": "figma-desktop-plugin",
-  "description": "Design-to-code automation via Figma Desktop. Extract UI code, design tokens, and screenshots from Figma files using mcp2rest integration.",
-  "version": "0.5.0",
+  "description": "Extract UI code, design tokens, and screenshots from Figma designs via desktop app. Use when implementing designs, building component libraries, or documenting design systems.",
+  "version": "0.5.1",
   "author": {
     "name": "ulasbilgen"
   }

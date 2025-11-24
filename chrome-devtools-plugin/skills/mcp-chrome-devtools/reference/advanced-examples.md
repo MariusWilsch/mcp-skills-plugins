@@ -1,517 +1,737 @@
 # Advanced Examples
 
-Complex real-world workflows combining multiple tools.
+Complex workflows and advanced usage patterns for chrome-devtools.
 
-## Example 1: E-commerce Checkout Flow
+## Table of Contents
 
-Complete a full e-commerce purchase flow with validation.
+- [E2E Testing Workflows](#e2e-testing-workflows)
+- [Web Scraping Patterns](#web-scraping-patterns)
+- [Performance Optimization](#performance-optimization)
+- [CI/CD Integration](#cicd-integration)
+- [Cross-Browser Testing Simulation](#cross-browser-testing-simulation)
+- [Advanced JavaScript Extraction](#advanced-javascript-extraction)
+
+---
+
+## E2E Testing Workflows
+
+### Complete User Registration Flow
+
+Test full registration process with validation:
 
 ```bash
-# 1. Open product page
-node scripts/new_page.js --url https://shop.example.com/products/laptop-pro
+#!/bin/bash
+# test_registration.sh
 
-# 2. Verify product loaded
-node scripts/wait_for.js --text "Add to Cart"
-node scripts/take_snapshot.js
+echo "Starting registration flow test..."
+
+# 1. Open registration page
+node scripts/new_page.js --url https://example.com/register
+
+# 2. Wait for page load
+node scripts/wait_for.js --text "Create Account" --timeout 10000
+
+# 3. Get form structure
+node scripts/take_snapshot.js --filePath registration_form.txt
+
+# 4. Fill registration form (update UIDs from snapshot)
+node scripts/fill_form.js --elements '[
+  {"uid":"input_firstname","value":"John"},
+  {"uid":"input_lastname","value":"Doe"},
+  {"uid":"input_email","value":"john.doe@example.com"},
+  {"uid":"input_password","value":"SecurePass123!"},
+  {"uid":"input_password_confirm","value":"SecurePass123!"},
+  {"uid":"select_country","value":"United States"}
+]'
+
+# 5. Screenshot before submission
+node scripts/take_screenshot.js --filePath before_submit.png
+
+# 6. Accept terms checkbox
+node scripts/click.js --uid checkbox_terms
+
+# 7. Submit form
+node scripts/click.js --uid button_register
+
+# 8. Wait for success message
+if node scripts/wait_for.js --text "Registration successful" --timeout 15000; then
+  echo "✓ Registration succeeded"
+
+  # 9. Capture success state
+  node scripts/take_screenshot.js --filePath registration_success.png
+  node scripts/take_snapshot.js --filePath success_page.txt
+
+  # 10. Check for welcome email notification
+  node scripts/wait_for.js --text "Verification email sent" --timeout 5000
+
+  echo "✓ Test passed: Registration flow complete"
+  exit 0
+else
+  echo "✗ Registration failed"
+
+  # Capture error state
+  node scripts/take_screenshot.js --filePath registration_error.png
+  node scripts/list_console_messages.js --types error > console_errors.txt
+
+  echo "✗ Test failed: See error screenshots and logs"
+  exit 1
+fi
+```
+
+### Shopping Cart Checkout Flow
+
+Test complete e-commerce checkout:
+
+```bash
+#!/bin/bash
+# test_checkout.sh
+
+echo "Testing checkout flow..."
+
+# 1. Navigate to product page
+node scripts/new_page.js --url https://example.com/products/widget-123
+
+# 2. Wait and verify product loads
+node scripts/wait_for.js --text "Add to Cart" --timeout 10000
+node scripts/take_snapshot.js > product_page.txt
 
 # 3. Add to cart
 node scripts/click.js --uid button_add_to_cart
-node scripts/wait_for.js --text "Added to cart"
+node scripts/wait_for.js --text "Added to cart" --timeout 5000
 
 # 4. Go to cart
-node scripts/navigate_page.js --url https://shop.example.com/cart
-node scripts/wait_for.js --text "Shopping Cart"
-node scripts/take_snapshot.js
+node scripts/click.js --uid link_view_cart
+node scripts/wait_for.js --text "Shopping Cart" --timeout 5000
 
-# 5. Proceed to checkout
+# 5. Verify cart contents
+node scripts/take_snapshot.js --filePath cart_contents.txt
+node scripts/evaluate_script.js --function "() => document.querySelector('.cart-total').textContent" > cart_total.txt
+
+# 6. Proceed to checkout
 node scripts/click.js --uid button_checkout
-node scripts/wait_for.js --text "Checkout"
+node scripts/wait_for.js --text "Shipping Information" --timeout 10000
 
-# 6. Fill shipping information
-node scripts/take_snapshot.js
+# 7. Fill shipping info
 node scripts/fill_form.js --elements '[
-  {"uid": "input_first_name", "value": "John"},
-  {"uid": "input_last_name", "value": "Doe"},
-  {"uid": "input_email", "value": "john@example.com"},
-  {"uid": "input_address", "value": "123 Main St"},
-  {"uid": "input_city", "value": "San Francisco"},
-  {"uid": "input_zip", "value": "94102"}
+  {"uid":"input_address","value":"123 Main Street"},
+  {"uid":"input_city","value":"San Francisco"},
+  {"uid":"input_state","value":"CA"},
+  {"uid":"input_zip","value":"94102"}
 ]'
 
-# 7. Continue to payment
+# 8. Continue to payment
 node scripts/click.js --uid button_continue
-node scripts/wait_for.js --text "Payment Information"
+node scripts/wait_for.js --text "Payment Method" --timeout 10000
 
-# 8. Fill payment (test mode)
-node scripts/take_snapshot.js
+# 9. Select payment method
+node scripts/click.js --uid radio_credit_card
+
+# 10. Fill payment info (test mode)
 node scripts/fill_form.js --elements '[
-  {"uid": "input_card_number", "value": "4242424242424242"},
-  {"uid": "input_expiry", "value": "12/25"},
-  {"uid": "input_cvv", "value": "123"}
+  {"uid":"input_card_number","value":"4242424242424242"},
+  {"uid":"input_card_expiry","value":"12/25"},
+  {"uid":"input_card_cvc","value":"123"}
 ]'
 
-# 9. Review order
-node scripts/click.js --uid button_review
-node scripts/wait_for.js --text "Review Order"
-node scripts/take_screenshot.js --filePath order-review.png
-
-# 10. Place order
+# 11. Place order
 node scripts/click.js --uid button_place_order
-node scripts/wait_for.js --text "Order Confirmed" --timeout 10000
+node scripts/wait_for.js --text "Order Confirmed" --timeout 20000
 
-# 11. Verify confirmation
-node scripts/take_snapshot.js
-node scripts/take_screenshot.js --filePath order-confirmation.png
+# 12. Capture confirmation
+node scripts/take_screenshot.js --filePath order_confirmation.png
+node scripts/evaluate_script.js --function "() => ({orderNumber: document.querySelector('.order-number').textContent, total: document.querySelector('.order-total').textContent})" > order_details.json
 
-# 12. Check for any errors
-node scripts/list_console_messages.js --types '["error"]'
-
-# 13. Verify confirmation email sent (check network)
-node scripts/list_network_requests.js --resourceTypes '["fetch"]'
+echo "✓ Checkout flow completed successfully"
 ```
 
-**Expected result:** Order placed successfully with confirmation screenshot.
+---
 
-## Example 2: Multi-Step Form with Validation
+## Web Scraping Patterns
 
-Handle a complex form with client-side validation and error recovery.
+### Multi-Page Data Extraction
 
-```bash
-# 1. Open application form
-node scripts/new_page.js --url https://example.com/job-application
-
-# 2. Get form structure
-node scripts/take_snapshot.js
-
-# 3. Fill required fields
-node scripts/fill_form.js --elements '[
-  {"uid": "input_name", "value": "Jane Smith"},
-  {"uid": "input_email", "value": "invalid-email"},
-  {"uid": "input_phone", "value": "555-0123"}
-]'
-
-# 4. Try to submit (will fail validation)
-node scripts/click.js --uid button_submit
-
-# 5. Check for validation errors
-node scripts/wait_for.js --text "Invalid email"
-node scripts/take_snapshot.js
-# Shows: Error message near input_email
-
-# 6. Fix email and retry
-node scripts/fill.js --uid input_email --value "jane@example.com"
-node scripts/click.js --uid button_submit
-
-# 7. Wait for next step
-node scripts/wait_for.js --text "Step 2"
-
-# 8. Fill work experience section
-node scripts/take_snapshot.js
-node scripts/fill_form.js --elements '[
-  {"uid": "input_company", "value": "Tech Corp"},
-  {"uid": "input_position", "value": "Senior Engineer"},
-  {"uid": "input_years", "value": "5"}
-]'
-
-# 9. Upload resume
-node scripts/upload_file.js --uid input_resume --filePath /Users/me/resume.pdf
-
-# 10. Verify upload
-node scripts/wait_for.js --text "resume.pdf"
-node scripts/take_snapshot.js
-
-# 11. Continue to final step
-node scripts/click.js --uid button_continue
-node scripts/wait_for.js --text "Step 3"
-
-# 12. Fill cover letter
-node scripts/take_snapshot.js
-node scripts/fill.js --uid textarea_cover_letter --value "I am excited to apply for this position..."
-
-# 13. Review and submit
-node scripts/click.js --uid button_final_submit
-
-# 14. Handle confirmation dialog
-node scripts/handle_dialog.js --action accept
-
-# 15. Wait for success
-node scripts/wait_for.js --text "Application submitted" --timeout 10000
-
-# 16. Capture confirmation
-node scripts/take_screenshot.js --filePath application-success.png
-
-# 17. Verify no errors
-node scripts/list_console_messages.js --types '["error"]'
-```
-
-**Key techniques:**
-- Error detection and recovery
-- Multi-step form navigation
-- File upload validation
-- Dialog handling
-
-## Example 3: Single Page Application Testing
-
-Test a React/Vue/Angular SPA with dynamic content.
+Scrape data across paginated results:
 
 ```bash
-# 1. Open SPA
-node scripts/new_page.js --url https://app.example.com
-node scripts/wait_for.js --text "Dashboard"
+#!/bin/bash
+# scrape_listings.sh
 
-# 2. Get initial state
-node scripts/take_snapshot.js
-node scripts/take_screenshot.js --filePath state-1-dashboard.png
+BASE_URL="https://example.com/listings"
+OUTPUT_FILE="all_listings.json"
+MAX_PAGES=10
 
-# 3. Check app loaded correctly
-node scripts/evaluate_script.js --function "() => window.__APP_READY__"
-node scripts/evaluate_script.js --function "() => document.querySelector('#root').children.length > 0"
+echo "[" > $OUTPUT_FILE
 
-# 4. Navigate to users page (client-side routing)
-node scripts/click.js --uid link_users
-node scripts/wait_for.js --text "User Management"
+for page in $(seq 1 $MAX_PAGES); do
+  echo "Scraping page $page..."
 
-# 5. Wait for API data to load
-node scripts/wait_for.js --text "Loading" --timeout 2000
-node scripts/wait_for.js --text "Users loaded"
+  # Navigate to page
+  if [ $page -eq 1 ]; then
+    node scripts/new_page.js --url "$BASE_URL"
+  else
+    node scripts/navigate_page.js --url "$BASE_URL?page=$page"
+  fi
 
-# 6. Verify API calls
-node scripts/list_network_requests.js --resourceTypes '["fetch"]'
-# Should show: GET /api/users (200)
+  # Wait for listings to load
+  node scripts/wait_for.js --text "listings found" --timeout 10000
 
-# 7. Get updated snapshot (new content)
-node scripts/take_snapshot.js
-
-# 8. Filter users
-node scripts/fill.js --uid input_search --value "admin"
-node scripts/press_key.js --key "Enter"
-
-# 9. Wait for filtered results
-node scripts/wait_for.js --text "admin@example.com"
-
-# 10. Take snapshot of filtered state
-node scripts/take_snapshot.js
-node scripts/take_screenshot.js --filePath state-2-filtered.png
-
-# 11. Click on a user
-node scripts/click.js --uid row_user_0
-
-# 12. Wait for modal/sidebar to open
-node scripts/wait_for.js --text "User Details"
-node scripts/take_snapshot.js
-
-# 13. Edit user
-node scripts/click.js --uid button_edit
-node scripts/fill.js --uid input_user_name --value "Updated Name"
-node scripts/click.js --uid button_save
-
-# 14. Wait for save API call
-node scripts/wait_for.js --text "Saved successfully"
-
-# 15. Verify PATCH request
-node scripts/list_network_requests.js --resourceTypes '["fetch"]'
-# Should show: PATCH /api/users/123 (200)
-
-# 16. Close modal
-node scripts/press_key.js --key "Escape"
-
-# 17. Verify no console errors
-node scripts/list_console_messages.js --types '["error", "warning"]'
-
-# 18. Check final state
-node scripts/take_screenshot.js --filePath state-3-final.png
-```
-
-**SPA-specific techniques:**
-- Client-side routing navigation
-- Waiting for AJAX content
-- API call verification
-- Dynamic content snapshots
-
-## Example 4: Performance Audit Workflow
-
-Complete performance audit with throttling and analysis.
-
-```bash
-# 1. Open page in optimal conditions
-node scripts/new_page.js --url https://example.com
-
-# 2. Baseline performance
-node scripts/performance_start_trace.js --reload true --autoStop true
-# Save output: LCP 2.1s, CLS 0.05, INP 120ms
-node scripts/take_screenshot.js --filePath perf-baseline.png
-
-# 3. Test on Slow 3G
-node scripts/emulate.js --networkConditions '{
-  "downloadThroughput": 50000,
-  "uploadThroughput": 20000,
-  "latency": 100
-}' --cpuThrottlingRate 4
-
-# 4. Performance on slow connection
-node scripts/performance_start_trace.js --reload true --autoStop true
-# Output: LCP 8.5s, CLS 0.15, INP 450ms, Insight Set: set_abc123
-
-# 5. Analyze problematic metrics
-node scripts/performance_analyze_insight.js --insightSetId set_abc123 --insightName "LargestContentfulPaint"
-# Shows: Hero image loaded late, blocking CSS
-
-node scripts/performance_analyze_insight.js --insightSetId set_abc123 --insightName "RenderBlocking"
-# Shows: 3 CSS files blocking render
-
-node scripts/performance_analyze_insight.js --insightSetId set_abc123 --insightName "ThirdParties"
-# Shows: Analytics script delaying load by 2.3s
-
-# 6. Check network waterfall
-node scripts/list_network_requests.js
-# Identify slow resources
-
-# 7. Test on Fast 3G
-node scripts/emulate.js --networkConditions '{
-  "downloadThroughput": 180000,
-  "uploadThroughput": 75000,
-  "latency": 40
-}' --cpuThrottlingRate 2
-
-node scripts/performance_start_trace.js --reload true --autoStop true
-# Output: LCP 4.2s, CLS 0.08, INP 250ms
-
-# 8. Reset to normal
-node scripts/emulate.js
-
-# 9. Test mobile viewport performance
-node scripts/resize_page.js --width 375 --height 667
-node scripts/performance_start_trace.js --reload true --autoStop true
-
-# 10. Document findings
-node scripts/take_screenshot.js --fullPage true --filePath perf-mobile.png
-
-# 11. Generate report (custom script)
-echo "Performance Audit Report" > perf-report.txt
-echo "========================" >> perf-report.txt
-echo "Baseline: LCP 2.1s, CLS 0.05" >> perf-report.txt
-echo "Slow 3G: LCP 8.5s, CLS 0.15" >> perf-report.txt
-echo "Issues: Render-blocking CSS, large hero image" >> perf-report.txt
-```
-
-**Performance testing patterns:**
-- Baseline measurement
-- Throttled testing (Slow 3G, CPU)
-- Insight analysis
-- Mobile viewport testing
-
-## Example 5: Automated Screenshot Comparison
-
-Capture screenshots across different states for visual testing.
-
-```bash
-# 1. Define viewport sizes
-DESKTOP="1920 1080"
-TABLET="768 1024"
-MOBILE="375 667"
-
-# 2. Open page
-node scripts/new_page.js --url https://example.com
-
-# 3. Desktop screenshots
-node scripts/resize_page.js --width 1920 --height 1080
-node scripts/wait_for.js --text "Ready"
-
-# Home page
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/desktop-home.png
-
-# Products page
-node scripts/navigate_page.js --url https://example.com/products
-node scripts/wait_for.js --text "Products"
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/desktop-products.png
-
-# 4. Tablet screenshots
-node scripts/resize_page.js --width 768 --height 1024
-
-node scripts/navigate_page.js --url https://example.com
-node scripts/wait_for.js --text "Ready"
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/tablet-home.png
-
-node scripts/navigate_page.js --url https://example.com/products
-node scripts/wait_for.js --text "Products"
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/tablet-products.png
-
-# 5. Mobile screenshots
-node scripts/resize_page.js --width 375 --height 667
-
-node scripts/navigate_page.js --url https://example.com
-node scripts/wait_for.js --text "Ready"
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/mobile-home.png
-
-node scripts/navigate_page.js --url https://example.com/products
-node scripts/wait_for.js --text "Products"
-node scripts/take_screenshot.js --fullPage true --filePath screenshots/mobile-products.png
-
-# 6. Compare with baseline (external tool)
-# pixelmatch, ImageMagick, or Percy
-```
-
-**Use cases:**
-- Visual regression testing
-- Responsive design verification
-- Cross-browser comparison
-
-## Example 6: Scraping Dynamic Content
-
-Extract data from a dynamic page with pagination.
-
-```bash
-# 1. Open listings page
-node scripts/new_page.js --url https://example.com/listings
-
-# 2. Wait for content
-node scripts/wait_for.js --text "Results"
-
-# 3. Get page 1 data
-node scripts/take_snapshot.js
-node scripts/evaluate_script.js --function "() => {
-  const items = Array.from(document.querySelectorAll('.listing-item'));
-  return items.map(item => ({
-    title: item.querySelector('.title').textContent,
-    price: item.querySelector('.price').textContent,
+  # Extract listings data
+  LISTINGS=$(node scripts/evaluate_script.js --function "() => Array.from(document.querySelectorAll('.listing')).map(item => ({
+    title: item.querySelector('.title').textContent.trim(),
+    price: item.querySelector('.price').textContent.trim(),
+    location: item.querySelector('.location').textContent.trim(),
     url: item.querySelector('a').href
-  }));
-}" > page1.json
+  }))")
 
-# 4. Go to page 2
-node scripts/click.js --uid button_next_page
-node scripts/wait_for.js --text "Page 2"
+  # Append to output (remove outer brackets)
+  echo "$LISTINGS" | jq '.[]' >> $OUTPUT_FILE
 
-# 5. Get page 2 data
+  # Check if there's a next page
+  HAS_NEXT=$(node scripts/evaluate_script.js --function "() => document.querySelector('.pagination .next') !== null")
+
+  if [ "$HAS_NEXT" != "true" ]; then
+    echo "Reached last page at page $page"
+    break
+  fi
+
+  # Add comma separator
+  if [ $page -lt $MAX_PAGES ]; then
+    echo "," >> $OUTPUT_FILE
+  fi
+
+  # Be polite: wait between requests
+  sleep 2
+done
+
+echo "]" >> $OUTPUT_FILE
+
+echo "✓ Scraped listings saved to $OUTPUT_FILE"
+
+# Summary statistics
+TOTAL=$(cat $OUTPUT_FILE | jq 'length')
+echo "Total listings extracted: $TOTAL"
+```
+
+### Dynamic Content Scraping with Infinite Scroll
+
+Extract data from infinite scroll pages:
+
+```bash
+#!/bin/bash
+# scrape_infinite_scroll.sh
+
+echo "Scraping infinite scroll content..."
+
+# Open page
+node scripts/new_page.js --url https://example.com/feed
+
+# Wait for initial content
+node scripts/wait_for.js --text "Post" --timeout 10000
+
+# Initialize
+PREVIOUS_COUNT=0
+SCROLL_ATTEMPTS=0
+MAX_SCROLLS=20
+OUTPUT_FILE="feed_items.json"
+
+while [ $SCROLL_ATTEMPTS -lt $MAX_SCROLLS ]; do
+  # Count current items
+  CURRENT_COUNT=$(node scripts/evaluate_script.js --function "() => document.querySelectorAll('.feed-item').length")
+
+  echo "Scroll $SCROLL_ATTEMPTS: Found $CURRENT_COUNT items"
+
+  # Check if we got new items
+  if [ "$CURRENT_COUNT" -eq "$PREVIOUS_COUNT" ]; then
+    echo "No new items loaded, reached end"
+    break
+  fi
+
+  PREVIOUS_COUNT=$CURRENT_COUNT
+
+  # Scroll to bottom
+  node scripts/evaluate_script.js --function "() => window.scrollTo(0, document.body.scrollHeight)"
+
+  # Wait for new content to load
+  sleep 2
+
+  SCROLL_ATTEMPTS=$((SCROLL_ATTEMPTS + 1))
+done
+
+# Extract all items
+echo "Extracting all $CURRENT_COUNT items..."
+
+node scripts/evaluate_script.js --function "() => Array.from(document.querySelectorAll('.feed-item')).map(item => ({
+  author: item.querySelector('.author').textContent.trim(),
+  content: item.querySelector('.content').textContent.trim(),
+  timestamp: item.querySelector('.timestamp').textContent.trim(),
+  likes: item.querySelector('.likes').textContent.trim()
+}))" > $OUTPUT_FILE
+
+echo "✓ Extracted $CURRENT_COUNT items to $OUTPUT_FILE"
+```
+
+---
+
+## Performance Optimization
+
+### Automated Performance Regression Testing
+
+Compare performance across builds:
+
+```bash
+#!/bin/bash
+# performance_regression_test.sh
+
+BASELINE_URL="https://staging.example.com"
+CURRENT_URL="https://production.example.com"
+
+echo "Running performance regression tests..."
+
+# Test baseline (staging)
+echo "Testing baseline: $BASELINE_URL"
+
+node scripts/new_page.js --url "$BASELINE_URL"
+node scripts/performance_start_trace.js --reload true --autoStop false
+node scripts/wait_for.js --text "Ready" --timeout 30000
+node scripts/performance_stop_trace.js > baseline_trace.json
+
+BASELINE_LCP=$(cat baseline_trace.json | jq -r '.metrics.LCP.value')
+BASELINE_FID=$(cat baseline_trace.json | jq -r '.metrics.FID.value')
+BASELINE_CLS=$(cat baseline_trace.json | jq -r '.metrics.CLS.value')
+
+echo "Baseline: LCP=$BASELINE_LCP, FID=$BASELINE_FID, CLS=$BASELINE_CLS"
+
+# Test current (production)
+echo "Testing current: $CURRENT_URL"
+
+node scripts/navigate_page.js --url "$CURRENT_URL"
+node scripts/performance_start_trace.js --reload true --autoStop false
+node scripts/wait_for.js --text "Ready" --timeout 30000
+node scripts/performance_stop_trace.js > current_trace.json
+
+CURRENT_LCP=$(cat current_trace.json | jq -r '.metrics.LCP.value')
+CURRENT_FID=$(cat current_trace.json | jq -r '.metrics.FID.value')
+CURRENT_CLS=$(cat current_trace.json | jq -r '.metrics.CLS.value')
+
+echo "Current: LCP=$CURRENT_LCP, FID=$CURRENT_FID, CLS=$CURRENT_CLS"
+
+# Compare (allow 10% regression threshold)
+THRESHOLD=1.1
+FAILED=false
+
+LCP_RATIO=$(echo "scale=2; $CURRENT_LCP / $BASELINE_LCP" | bc)
+if (( $(echo "$LCP_RATIO > $THRESHOLD" | bc -l) )); then
+  echo "✗ LCP regression detected: ${CURRENT_LCP}ms vs ${BASELINE_LCP}ms"
+  FAILED=true
+else
+  echo "✓ LCP within threshold"
+fi
+
+FID_RATIO=$(echo "scale=2; $CURRENT_FID / $BASELINE_FID" | bc)
+if (( $(echo "$FID_RATIO > $THRESHOLD" | bc -l) )); then
+  echo "✗ FID regression detected: ${CURRENT_FID}ms vs ${BASELINE_FID}ms"
+  FAILED=true
+else
+  echo "✓ FID within threshold"
+fi
+
+CLS_RATIO=$(echo "scale=2; $CURRENT_CLS / $BASELINE_CLS" | bc)
+if (( $(echo "$CLS_RATIO > $THRESHOLD" | bc -l) )); then
+  echo "✗ CLS regression detected: ${CURRENT_CLS} vs ${BASELINE_CLS}"
+  FAILED=true
+else
+  echo "✓ CLS within threshold"
+fi
+
+if [ "$FAILED" = true ]; then
+  echo "Performance regression test FAILED"
+  exit 1
+else
+  echo "Performance regression test PASSED"
+  exit 0
+fi
+```
+
+### Network Performance Testing Matrix
+
+Test performance across network conditions:
+
+```bash
+#!/bin/bash
+# network_performance_matrix.sh
+
+URL="https://example.com"
+OUTPUT_DIR="performance_results"
+
+mkdir -p $OUTPUT_DIR
+
+# Define network profiles
+declare -A NETWORKS
+NETWORKS["fast"]='{"downloadThroughput":10000000,"uploadThroughput":10000000,"latency":10}'
+NETWORKS["4g"]='{"downloadThroughput":1600000,"uploadThroughput":750000,"latency":150}'
+NETWORKS["3g"]='{"downloadThroughput":180000,"uploadThroughput":84000,"latency":562}'
+NETWORKS["slow-3g"]='{"downloadThroughput":50000,"uploadThroughput":50000,"latency":2000}'
+
+echo "Testing performance across network conditions..."
+
+# Open page once
+node scripts/new_page.js --url "$URL"
+
+for profile in "${!NETWORKS[@]}"; do
+  echo "Testing network profile: $profile"
+
+  # Apply network emulation
+  node scripts/emulate.js --networkConditions "${NETWORKS[$profile]}"
+
+  # Run performance trace
+  node scripts/performance_start_trace.js --reload true --autoStop false
+  node scripts/wait_for.js --text "Ready" --timeout 60000
+  node scripts/performance_stop_trace.js > "$OUTPUT_DIR/${profile}_trace.json"
+
+  # Extract key metrics
+  LCP=$(cat "$OUTPUT_DIR/${profile}_trace.json" | jq -r '.metrics.LCP.value')
+  FID=$(cat "$OUTPUT_DIR/${profile}_trace.json" | jq -r '.metrics.FID.value')
+  CLS=$(cat "$OUTPUT_DIR/${profile}_trace.json" | jq -r '.metrics.CLS.value')
+
+  echo "$profile: LCP=${LCP}ms, FID=${FID}ms, CLS=$CLS"
+
+  # Capture screenshot
+  node scripts/take_screenshot.js --filePath "$OUTPUT_DIR/${profile}_loaded.png"
+done
+
+# Reset to normal
+node scripts/emulate.js --cpuThrottlingRate 1
+
+echo "✓ Performance testing complete. Results in $OUTPUT_DIR/"
+```
+
+---
+
+## CI/CD Integration
+
+### GitHub Actions Workflow
+
+```yaml
+# .github/workflows/e2e-tests.yml
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install mcp2skill-tools
+      run: |
+        npm install -g mcp2skill-tools
+
+    - name: Start mcp2rest
+      run: |
+        mcp2rest start
+        mcp2rest add chrome-devtools
+
+    - name: Install skill dependencies
+      run: |
+        cd ~/.claude/skills/mcp-chrome-devtools/scripts
+        npm install
+
+    - name: Run E2E tests
+      run: |
+        cd tests
+        bash test_registration.sh
+        bash test_checkout.sh
+        bash test_search.sh
+
+    - name: Upload test artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          **/*.png
+          **/*.txt
+          **/*.json
+
+    - name: Stop mcp2rest
+      if: always()
+      run: mcp2rest stop
+```
+
+### Jenkins Pipeline
+
+```groovy
+// Jenkinsfile
+pipeline {
+    agent any
+
+    environment {
+        NODE_VERSION = '18'
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                sh 'npm install -g mcp2skill-tools'
+                sh 'mcp2rest start'
+                sh 'mcp2rest add chrome-devtools'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                dir('~/.claude/skills/mcp-chrome-devtools/scripts') {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('E2E Tests') {
+            parallel {
+                stage('Registration Flow') {
+                    steps {
+                        sh 'bash tests/test_registration.sh'
+                    }
+                }
+                stage('Checkout Flow') {
+                    steps {
+                        sh 'bash tests/test_checkout.sh'
+                    }
+                }
+                stage('Search Flow') {
+                    steps {
+                        sh 'bash tests/test_search.sh'
+                    }
+                }
+            }
+        }
+
+        stage('Performance Tests') {
+            steps {
+                sh 'bash tests/performance_regression_test.sh'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/*.png,**/*.txt,**/*.json', allowEmptyArchive: true
+            sh 'mcp2rest stop'
+        }
+        failure {
+            emailext (
+                subject: "E2E Tests Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "Check console output at ${env.BUILD_URL}",
+                to: "team@example.com"
+            )
+        }
+    }
+}
+```
+
+---
+
+## Cross-Browser Testing Simulation
+
+### Device Emulation Matrix
+
+```bash
+#!/bin/bash
+# device_matrix_test.sh
+
+URL="https://example.com"
+OUTPUT_DIR="device_screenshots"
+
+mkdir -p $OUTPUT_DIR
+
+# Define device viewports
+declare -A DEVICES
+DEVICES["desktop_1080"]="1920 1080"
+DEVICES["desktop_720"]="1280 720"
+DEVICES["laptop"]="1366 768"
+DEVICES["ipad_portrait"]="768 1024"
+DEVICES["ipad_landscape"]="1024 768"
+DEVICES["iphone_portrait"]="375 667"
+DEVICES["iphone_landscape"]="667 375"
+DEVICES["android_portrait"]="360 640"
+DEVICES["android_landscape"]="640 360"
+
+echo "Testing across device viewports..."
+
+# Open page
+node scripts/new_page.js --url "$URL"
+
+for device in "${!DEVICES[@]}"; do
+  echo "Testing device: $device"
+
+  # Parse dimensions
+  read -r width height <<< "${DEVICES[$device]}"
+
+  # Resize window
+  node scripts/resize_page.js --width $width --height $height
+
+  # Wait for reflow
+  sleep 2
+
+  # Capture screenshot
+  node scripts/take_screenshot.js --fullPage true --filePath "$OUTPUT_DIR/${device}.png"
+
+  # Capture snapshot for debugging
+  node scripts/take_snapshot.js --filePath "$OUTPUT_DIR/${device}_snapshot.txt"
+done
+
+echo "✓ Device matrix testing complete. Screenshots in $OUTPUT_DIR/"
+```
+
+---
+
+## Advanced JavaScript Extraction
+
+### Extract Structured Data from SPA
+
+```bash
+#!/bin/bash
+# extract_spa_data.sh
+
+echo "Extracting data from Single Page Application..."
+
+# Open SPA
+node scripts/new_page.js --url https://example.com/dashboard
+
+# Wait for app to initialize
+node scripts/wait_for.js --text "Dashboard" --timeout 15000
+
+# Wait for data to load (check for spinner to disappear)
+node scripts/evaluate_script.js --function "() => new Promise(resolve => {
+  const checkSpinner = setInterval(() => {
+    if (!document.querySelector('.loading-spinner')) {
+      clearInterval(checkSpinner);
+      resolve(true);
+    }
+  }, 100);
+})"
+
+# Extract React/Vue component state
+APP_STATE=$(node scripts/evaluate_script.js --function "() => {
+  // Try to access React DevTools state
+  const root = document.querySelector('#root');
+  const reactInternals = root._reactRootContainer || root._reactInternalFiber;
+
+  // Or access Vue instance
+  const vueInstance = root.__vue__;
+
+  // Extract data from global state (Redux, Vuex, etc.)
+  return {
+    redux: window.__REDUX_DEVTOOLS_EXTENSION__ ? window.store.getState() : null,
+    vuex: window.__VUEX_DEVTOOLS_GLOBAL_HOOK__ ? window.$store.state : null,
+    // Or extract directly from DOM
+    domData: Array.from(document.querySelectorAll('.data-item')).map(item => ({
+      id: item.dataset.id,
+      title: item.querySelector('.title').textContent,
+      value: item.querySelector('.value').textContent
+    }))
+  };
+}")
+
+echo "$APP_STATE" | jq '.' > app_state.json
+
+echo "✓ Extracted application state to app_state.json"
+```
+
+### Monitor Real-Time Updates
+
+```bash
+#!/bin/bash
+# monitor_realtime_updates.sh
+
+echo "Monitoring real-time updates..."
+
+# Open page with real-time data
+node scripts/new_page.js --url https://example.com/live-feed
+
+# Set up monitoring script
 node scripts/evaluate_script.js --function "() => {
-  const items = Array.from(document.querySelectorAll('.listing-item'));
-  return items.map(item => ({
-    title: item.querySelector('.title').textContent,
-    price: item.querySelector('.price').textContent,
-    url: item.querySelector('a').href
-  }));
-}" > page2.json
+  window.updates = [];
+  window.observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => {
+          if (node.classList && node.classList.contains('update-item')) {
+            window.updates.push({
+              timestamp: new Date().toISOString(),
+              content: node.textContent,
+              type: node.dataset.type
+            });
+          }
+        });
+      }
+    });
+  });
 
-# 6. Continue for more pages...
+  const container = document.querySelector('.updates-container');
+  window.observer.observe(container, { childList: true, subtree: true });
 
-# 7. Combine results
-cat page*.json | jq -s 'add' > all-listings.json
+  return 'Monitoring started';
+}"
+
+# Wait for updates to accumulate
+echo "Collecting updates for 60 seconds..."
+sleep 60
+
+# Retrieve collected updates
+UPDATES=$(node scripts/evaluate_script.js --function "() => window.updates")
+
+echo "$UPDATES" | jq '.' > realtime_updates.json
+
+# Clean up
+node scripts/evaluate_script.js --function "() => { window.observer.disconnect(); return 'Monitoring stopped'; }"
+
+echo "✓ Collected updates saved to realtime_updates.json"
 ```
 
-**Data extraction patterns:**
-- Pagination handling
-- JavaScript evaluation for extraction
-- JSON output formatting
+---
 
-## Example 7: Testing Authentication Flow
+## Complex Workflow Orchestration
 
-Complete login/logout testing with session verification.
+### Multi-User Simulation
 
 ```bash
-# 1. Open login page
-node scripts/new_page.js --url https://app.example.com/login
+#!/bin/bash
+# simulate_multi_user.sh
 
-# 2. Verify logged out state
-node scripts/evaluate_script.js --function "() => !localStorage.getItem('authToken')"
+echo "Simulating multi-user interactions..."
 
-# 3. Fill login form
-node scripts/take_snapshot.js
-node scripts/fill_form.js --elements '[
-  {"uid": "input_email", "value": "test@example.com"},
-  {"uid": "input_password", "value": "password123"}
-]'
+# User 1: Admin workflow
+(
+  echo "User 1: Admin actions"
+  node scripts/new_page.js --url https://example.com/admin
+  node scripts/wait_for.js --text "Admin Panel" --timeout 10000
+  # ... admin actions ...
+) &
 
-# 4. Submit login
-node scripts/click.js --uid button_login
-node scripts/wait_for.js --text "Dashboard" --timeout 10000
+# User 2: Customer workflow
+(
+  echo "User 2: Customer actions"
+  node scripts/new_page.js --url https://example.com/shop
+  node scripts/wait_for.js --text "Products" --timeout 10000
+  # ... customer actions ...
+) &
 
-# 5. Verify logged in
-node scripts/evaluate_script.js --function "() => !!localStorage.getItem('authToken')"
+# Wait for both users to complete
+wait
 
-# 6. Check auth token
-node scripts/evaluate_script.js --function "() => localStorage.getItem('authToken')"
-
-# 7. Verify API calls include auth header
-node scripts/list_network_requests.js --resourceTypes '["fetch"]'
-
-# 8. Navigate protected pages
-node scripts/navigate_page.js --url https://app.example.com/profile
-node scripts/wait_for.js --text "Profile"
-
-node scripts/navigate_page.js --url https://app.example.com/settings
-node scripts/wait_for.js --text "Settings"
-
-# 9. Logout
-node scripts/take_snapshot.js
-node scripts/click.js --uid button_logout
-
-# 10. Handle logout confirmation
-node scripts/handle_dialog.js --action accept
-
-# 11. Verify logged out
-node scripts/wait_for.js --text "Login"
-node scripts/evaluate_script.js --function "() => !localStorage.getItem('authToken')"
-
-# 12. Verify redirected to login
-node scripts/evaluate_script.js --function "() => window.location.pathname === '/login'"
-
-# 13. Attempt to access protected page while logged out
-node scripts/navigate_page.js --url https://app.example.com/settings
-
-# 14. Should redirect to login
-node scripts/wait_for.js --text "Please log in"
-node scripts/evaluate_script.js --function "() => window.location.pathname === '/login'"
+echo "✓ Multi-user simulation complete"
 ```
 
-**Authentication testing patterns:**
-- Session state verification
-- Protected route access
-- Logout and cleanup
-- Redirect verification
-
-## Example 8: Drag and Drop Kanban Board
-
-Organize tasks using drag-and-drop interface.
-
-```bash
-# 1. Open kanban board
-node scripts/new_page.js --url https://app.example.com/kanban
-node scripts/wait_for.js --text "Task Board"
-
-# 2. Get initial state
-node scripts/take_snapshot.js
-node scripts/take_screenshot.js --filePath kanban-initial.png
-
-# 3. Move task from TODO to IN PROGRESS
-node scripts/drag.js --from-uid card_task_1 --to-uid column_in_progress
-node scripts/wait_for.js --text "Task moved"
-
-# 4. Verify API update
-node scripts/list_network_requests.js --resourceTypes '["fetch"]'
-# Should show: PATCH /api/tasks/1 (200)
-
-# 5. Check new state
-node scripts/take_snapshot.js
-# card_task_1 now in column_in_progress
-
-# 6. Move task to DONE
-node scripts/drag.js --from-uid card_task_1 --to-uid column_done
-node scripts/wait_for.js --text "Task completed"
-
-# 7. Move multiple tasks
-node scripts/drag.js --from-uid card_task_2 --to-uid column_in_progress
-node scripts/drag.js --from-uid card_task_3 --to-uid column_in_progress
-
-# 8. Final state
-node scripts/take_screenshot.js --filePath kanban-final.png
-
-# 9. Verify no errors
-node scripts/list_console_messages.js --types '["error"]'
-```
-
-**Drag-and-drop patterns:**
-- Sequential drag operations
-- State verification after each move
-- API update confirmation
-
-These advanced examples demonstrate complex real-world scenarios combining multiple tools and techniques for comprehensive browser automation.
+This advanced examples reference provides production-ready patterns for complex automation, testing, and data extraction workflows.

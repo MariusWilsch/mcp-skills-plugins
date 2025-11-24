@@ -1,440 +1,380 @@
 ---
 name: mcp-figma-desktop
-description: Extract UI code, design tokens, and screenshots from Figma Desktop. Generate code from selected nodes, get design system variables, capture component visuals, and analyze design structure for design-to-code workflows.
+description: Extract UI code, design tokens, and screenshots from Figma designs via desktop app. Use when implementing designs, building component libraries, or documenting design systems.
 ---
 
-# Figma Desktop Integration
+# Figma Desktop Skill
 
-Extract design specifications and generate UI code directly from Figma Desktop. Works with your currently open Figma file and selected nodes.
+Interact with Figma designs directly through the Figma desktop app. Extract UI code (React, Vue, SwiftUI, etc.), design tokens (colors, spacing, typography), screenshots, and metadata from design files. Perfect for implementing design specs, creating component libraries, and maintaining design-code consistency.
 
 ## Prerequisites
 
-- **Figma Desktop app** installed and running
-- **mcp2rest** running on http://localhost:28888
-- **figma-desktop server** loaded in mcp2rest
-- **Node.js** >= 18.0.0
-- **Active Figma file** open in Figma Desktop
+- Figma desktop app installed and running
+- mcp2rest running on http://localhost:28888
+- figma-desktop server loaded in mcp2rest (http://127.0.0.1:3845/mcp)
+- Node.js 18+ installed
+
+**Verify connection:**
+```bash
+curl http://localhost:28888/health
+curl http://localhost:28888/servers | grep figma-desktop
+```
 
 ## Quick Start
 
-Extract code from your currently selected Figma component:
+Most tools work with either:
+- **Currently selected node** in Figma (no parameters)
+- **Specific node ID** (via `--nodeId` parameter)
+- **Figma URL** (automatically extracts node ID)
 
+**Example: Get code for selected component**
 ```bash
-# 1. Open Figma Desktop and select a component
-# 2. Extract UI code from selected node
-node scripts/get_design_context.js
+cd .claude/skills/mcp-figma-desktop/scripts
 
-# Output: Returns HTML/CSS/React code for the selected component
+# 1. Select a component in Figma desktop app
+# 2. Run this to get React code:
+node get_design_context.js --clientFrameworks react
+
+# Output: React component code with props, styling, and structure
 ```
 
-Extract code from a specific node by ID:
-
+**Example: Get code from Figma URL**
 ```bash
-# Node ID from URL: https://figma.com/design/ABC123/MyDesign?node-id=1-2
-# Extract node-id: 1-2 becomes 1:2
-node scripts/get_design_context.js --nodeId "1:2"
+# Extract node 123-456 from URL: https://figma.com/design/abc/MyFile?node-id=123-456
+node get_design_context.js --nodeId "123:456" --clientFrameworks react,typescript
 ```
 
 ## Available Tools
 
-### Design Extraction
+### Design Code Generation
 
-**get_design_context** - Generate UI code for Figma nodes
-- **Primary tool** for extracting design specifications and code
-- Works with selected node or specific node ID
-- Returns: HTML, CSS, React components, design tokens
-- Optional:
-  - `--nodeId` - Node ID (e.g., "123:456" or extracted from URL)
-  - `--clientLanguages` - Target languages (e.g., "javascript,typescript")
-  - `--clientFrameworks` - Target frameworks (e.g., "react,vue")
-  - `--forceCode` - Force code generation even if output is large
+**get_design_context.js** - Generate production-ready UI code
+- **Use for:** Converting designs to React/Vue/SwiftUI/etc components
+- **Parameters:**
+  - `--nodeId` (optional) - Node ID like "123:456", or omit to use selected node
+  - `--clientLanguages` (optional) - Language preferences (e.g., typescript, swift)
+  - `--clientFrameworks` (optional) - Framework preferences (e.g., react, vue, swiftui)
+  - `--forceCode` (optional) - Force code generation even if not recommended
 
-Example:
-```bash
-# Extract selected node with React/TypeScript context
-node scripts/get_design_context.js \
-  --clientLanguages "typescript" \
-  --clientFrameworks "react"
+**get_figjam.js** - Generate code from FigJam boards
+- **Use for:** Extracting content from FigJam files (NOT regular Figma files)
+- **Parameters:**
+  - `--nodeId` (optional) - FigJam node ID or omit for selected node
+  - `--clientLanguages` (optional) - Language preferences
+  - `--clientFrameworks` (optional) - Framework preferences
+  - `--includeImagesOfNodes` (optional) - Include embedded images
 
-# Extract specific node
-node scripts/get_design_context.js \
-  --nodeId "145:892" \
-  --clientLanguages "javascript,html,css"
+**Important:** FigJam URLs use `/board/` instead of `/design/`:
+- FigJam: `https://figma.com/board/:fileKey/:fileName?node-id=1-2` → nodeId: "1:2"
+- Figma: `https://figma.com/design/:fileKey/:fileName?node-id=1-2` → nodeId: "1:2"
+
+### Design Tokens & Variables
+
+**get_variable_defs.js** - Extract design system variables
+- **Use for:** Getting reusable design tokens (colors, spacing, typography)
+- **Parameters:**
+  - `--nodeId` (optional) - Node ID or omit for selected node
+  - `--clientLanguages` (optional) - Output format preferences
+  - `--clientFrameworks` (optional) - Framework-specific token formats
+
+**Output example:**
+```json
+{
+  "icon/default/secondary": "#949494",
+  "spacing/base": "8px",
+  "font/heading/large": "32px"
+}
 ```
 
-**get_metadata** - Get page/node structure in XML format
-- **Use sparingly** - Prefer get_design_context for most cases
-- Returns: Node IDs, layer types, names, positions, sizes
-- Useful for: Getting overview of design structure, finding node IDs
-- Optional:
-  - `--nodeId` - Node or page ID (e.g., "0:1" for page)
-  - `--clientLanguages` - Context for logging
-  - `--clientFrameworks` - Context for logging
+### Visual Assets
 
-Example:
-```bash
-# Get structure of entire page
-node scripts/get_metadata.js --nodeId "0:1"
+**get_screenshot.js** - Generate high-quality screenshots
+- **Use for:** Creating visual documentation, design reviews, presentations
+- **Parameters:**
+  - `--nodeId` (optional) - Node to screenshot, or omit for selected
+  - `--clientLanguages` (optional) - Format preferences
+  - `--clientFrameworks` (optional) - Context for screenshot generation
 
-# Get structure of selected component
-node scripts/get_metadata.js
-```
+### Structure & Metadata
 
-### Assets & Variables
+**get_metadata.js** - Extract structural information
+- **Use for:** Understanding design hierarchy before detailed extraction
+- **Returns:** XML with node IDs, types, names, positions, sizes
+- **Note:** Prefer `get_design_context` for most use cases
+- **Parameters:**
+  - `--nodeId` (optional) - Node or page ID (e.g., "0:1" for whole page)
+  - `--clientLanguages` (optional)
+  - `--clientFrameworks` (optional)
 
-**get_variable_defs** - Get design system variable definitions
-- Returns: Color tokens, typography, spacing, etc.
-- Format: `{'icon/default/secondary': '#949494'}`
-- Optional:
-  - `--nodeId` - Node ID to get variables for
-  - `--clientLanguages` - Context for logging
-  - `--clientFrameworks` - Context for logging
+**When to use metadata:**
+1. Get overview of large page structure
+2. Find specific node IDs for detailed extraction
+3. Understand design organization before processing
 
-Example:
-```bash
-# Get all variables from selected component
-node scripts/get_variable_defs.js
+### Design System
 
-# Get variables for specific node
-node scripts/get_variable_defs.js --nodeId "89:234"
-```
-
-**get_screenshot** - Capture visual representation of nodes
-- Returns: PNG screenshot of component/node
-- Useful for: Documentation, visual regression testing, asset extraction
-- Optional:
-  - `--nodeId` - Node ID to screenshot
-  - `--clientLanguages` - Context for logging
-  - `--clientFrameworks` - Context for logging
-
-Example:
-```bash
-# Screenshot selected component
-node scripts/get_screenshot.js
-
-# Screenshot specific node
-node scripts/get_screenshot.js --nodeId "156:901"
-```
-
-### Design Systems
-
-**create_design_system_rules** - Generate design system documentation
-- Returns: Prompt/guide for creating design system rules
-- Analyzes design patterns and suggests conventions
-- Optional:
-  - `--clientLanguages` - Target languages for documentation
-  - `--clientFrameworks` - Target frameworks for guidelines
-
-Example:
-```bash
-# Generate design system rules for React/TypeScript project
-node scripts/create_design_system_rules.js \
-  --clientLanguages "typescript" \
-  --clientFrameworks "react"
-```
-
-### FigJam
-
-**get_figjam** - Extract content from FigJam boards
-- **FigJam only** - Does not work with regular Figma files
-- Returns: FigJam node content and structure
-- Optional:
-  - `--nodeId` - FigJam node ID (extracted from board URL)
-  - `--clientLanguages` - Context for logging
-  - `--clientFrameworks` - Context for logging
-  - `--includeImagesOfNodes` - Include node images (default: true)
-
-Example:
-```bash
-# Extract from FigJam board URL:
-# https://figma.com/board/XYZ789/MyBoard?node-id=5-10
-# Node ID: 5-10 becomes 5:10
-
-node scripts/get_figjam.js --nodeId "5:10"
-```
+**create_design_system_rules.js** - Generate design system documentation
+- **Use for:** Creating design system rules for your codebase
+- **Returns:** Prompt/template for documenting design patterns
+- **Parameters:**
+  - `--clientLanguages` (optional) - Language context
+  - `--clientFrameworks` (optional) - Framework context
 
 ## Common Workflows
 
-### Workflow 1: Extract Component Code
+### Workflow 1: Implement Component from Design
 
-Convert a Figma component to production code:
-
-**Input:**
-- Component URL: `https://figma.com/design/ABC123/MyApp?node-id=42-156`
-- Target: React + TypeScript
-- Node ID: `42:156` (extracted from URL, convert to `42:156`)
-
-**Steps:**
-```bash
-# 1. Extract UI code with framework context
-node scripts/get_design_context.js \
-  --nodeId "42:156" \
-  --clientLanguages "typescript" \
-  --clientFrameworks "react"
-
-# 2. Get design tokens/variables
-node scripts/get_variable_defs.js --nodeId "42:156"
-
-# 3. Capture screenshot for documentation
-node scripts/get_screenshot.js --nodeId "42:156"
-```
-
-**Expected Output:**
-- React component code with TypeScript types
-- CSS-in-JS or Tailwind classes
-- Design token values (colors, spacing, typography)
-- Component screenshot
+**Scenario:** Designer shares Figma link, you need to build the component
 
 **Checklist:**
-- [ ] Extract node ID from Figma URL (change `-` to `:`)
-- [ ] Run get_design_context with framework context
-- [ ] Extract design variables for token mapping
-- [ ] Capture screenshot for component library docs
-- [ ] Verify code compiles and renders correctly
+- [ ] Copy Figma URL from designer (e.g., `https://figma.com/design/abc/Button?node-id=12-34`)
+- [ ] Extract node ID from URL: `12-34` becomes `12:34`
+- [ ] Get component code: `node get_design_context.js --nodeId "12:34" --clientFrameworks react,typescript`
+- [ ] Review generated code and component props
+- [ ] Extract design tokens: `node get_variable_defs.js --nodeId "12:34"`
+- [ ] Create screenshot for documentation: `node get_screenshot.js --nodeId "12:34"`
+- [ ] Implement component using generated code as reference
+- [ ] Verify design tokens match
 
-### Workflow 2: Build Design Token System
-
-Extract design system variables for theming:
-
-**Input:**
-- Design system page URL: `https://figma.com/design/DEF456/DesignSystem?node-id=0-1`
-- Target: CSS custom properties
-- Page ID: `0:1`
-
-**Steps:**
+**Example:**
 ```bash
-# 1. Get page structure to find token groups
-node scripts/get_metadata.js --nodeId "0:1"
+cd .claude/skills/mcp-figma-desktop/scripts
 
-# 2. Extract variable definitions
-node scripts/get_variable_defs.js --nodeId "0:1"
+# 1. Get React + TypeScript code
+node get_design_context.js --nodeId "12:34" --clientFrameworks react,typescript
 
-# 3. Generate design system documentation
-node scripts/create_design_system_rules.js \
-  --clientLanguages "css,javascript" \
-  --clientFrameworks "unknown"
+# 2. Get design variables
+node get_variable_defs.js --nodeId "12:34"
+
+# 3. Take screenshot for docs
+node get_screenshot.js --nodeId "12:34"
 ```
 
-**Expected Output:**
-- Complete variable hierarchy (colors, typography, spacing, etc.)
-- Design system guidelines
-- Token naming conventions
-- CSS custom property mappings
+**Expected output:**
+- TypeScript React component with props interface
+- Design tokens (colors, spacing, typography)
+- High-quality PNG screenshot
+
+### Workflow 2: Build Component Library
+
+**Scenario:** Create reusable component library from design system
 
 **Checklist:**
-- [ ] Identify design system page ID
-- [ ] Extract all variable definitions
-- [ ] Generate design system rules document
-- [ ] Map Figma variables to CSS custom properties
-- [ ] Document token usage guidelines
+- [ ] Open design system file in Figma desktop
+- [ ] Get page structure: `node get_metadata.js --nodeId "0:1"` (page root)
+- [ ] Identify component node IDs from metadata XML
+- [ ] For each component:
+  - [ ] Extract code: `node get_design_context.js --nodeId "{id}" --clientFrameworks react`
+  - [ ] Extract tokens: `node get_variable_defs.js --nodeId "{id}"`
+  - [ ] Generate screenshot: `node get_screenshot.js --nodeId "{id}"`
+- [ ] Create design system rules: `node create_design_system_rules.js`
+- [ ] Organize components into library structure
+- [ ] Document usage patterns
 
-### Workflow 3: Document Components Visually
-
-Create visual documentation for component library:
-
-**Steps:**
+**Example: Button component extraction**
 ```bash
-# 1. Open Figma, select component variant group
-# 2. Get structure to identify all variants
-node scripts/get_metadata.js
+# 1. Get page structure to find button variants
+node get_metadata.js --nodeId "0:1" > structure.xml
 
-# 3. For each variant node ID found, capture screenshot
-node scripts/get_screenshot.js --nodeId "VARIANT_1_ID"
-node scripts/get_screenshot.js --nodeId "VARIANT_2_ID"
-node scripts/get_screenshot.js --nodeId "VARIANT_3_ID"
+# From XML, identify button node IDs: 45:12, 45:13, 45:14
 
-# 4. Extract code for each variant
-node scripts/get_design_context.js --nodeId "VARIANT_1_ID"
-node scripts/get_design_context.js --nodeId "VARIANT_2_ID"
-node scripts/get_design_context.js --nodeId "VARIANT_3_ID"
+# 2. Extract primary button
+node get_design_context.js --nodeId "45:12" --clientFrameworks react,typescript > Button.tsx
+node get_variable_defs.js --nodeId "45:12" > button-tokens.json
+node get_screenshot.js --nodeId "45:12" > button-primary.png
+
+# 3. Repeat for secondary, tertiary variants
 ```
+
+### Workflow 3: Design-to-Code for FigJam Wireframes
+
+**Scenario:** Convert FigJam wireframes into initial code structure
+
+**Important:** Use `get_figjam.js` for FigJam files, NOT `get_design_context.js`
 
 **Checklist:**
-- [ ] Select component in Figma Desktop
-- [ ] Get metadata to list all variants
-- [ ] Screenshot each variant for visual reference
-- [ ] Extract code for each variant state
-- [ ] Organize screenshots and code in documentation
+- [ ] Open FigJam board in Figma desktop
+- [ ] Select wireframe frame/section
+- [ ] Extract structure: `node get_figjam.js --includeImagesOfNodes true`
+- [ ] Review generated code skeleton
+- [ ] Refine with actual design components
 
-### Workflow 4: Work with Selected Nodes
-
-Fastest workflow using Figma's current selection:
-
-**Steps:**
+**Example:**
 ```bash
-# 1. Select any node in Figma Desktop
-# 2. Extract without specifying nodeId
-node scripts/get_design_context.js
+cd .claude/skills/mcp-figma-desktop/scripts
 
-# 3. Get variables for selection
-node scripts/get_variable_defs.js
+# From FigJam URL: https://figma.com/board/xyz/Wireframes?node-id=5-10
+# Extract node "5:10"
 
-# 4. Screenshot selection
-node scripts/get_screenshot.js
+node get_figjam.js --nodeId "5:10" --clientFrameworks react --includeImagesOfNodes true
 ```
 
-**Note:** All tools work with currently selected node when no `--nodeId` is provided.
+**Expected output:**
+- Basic component structure matching wireframe layout
+- Placeholder content from FigJam sticky notes/text
+- Embedded images if present
 
-## Node ID Reference
+### Workflow 4: Extract Design Tokens for Theme
 
-### Extracting Node IDs from URLs
+**Scenario:** Create theme configuration from design variables
 
-Figma URLs contain node IDs that need conversion:
+**Checklist:**
+- [ ] Select root design system frame in Figma
+- [ ] Extract all variables: `node get_variable_defs.js`
+- [ ] Parse output into theme format (CSS custom properties, JS theme object, etc.)
+- [ ] Validate variable naming conventions
+- [ ] Generate theme documentation
 
-**Design files:**
+**Example:**
+```bash
+# 1. Get all design tokens from selected design system root
+node get_variable_defs.js > design-tokens.json
+
+# Output will include:
+# {
+#   "color/primary/500": "#3B82F6",
+#   "color/primary/600": "#2563EB",
+#   "spacing/xs": "4px",
+#   "spacing/sm": "8px",
+#   "typography/heading/h1": "32px"
+# }
+
+# 2. Convert to CSS variables or theme object in your build process
 ```
-URL:     https://figma.com/design/ABC123/MyDesign?node-id=1-2
-Extract: node-id=1-2
-Convert: 1-2 → 1:2 (replace dash with colon)
-Usage:   --nodeId "1:2"
-```
 
-**FigJam boards:**
-```
-URL:     https://figma.com/board/XYZ789/MyBoard?node-id=5-10
-Extract: node-id=5-10
-Convert: 5-10 → 5:10
-Usage:   --nodeId "5:10"
-```
+## Node ID Format
+
+Figma uses colon-separated node IDs internally:
+
+**From Figma URLs:**
+- URL: `...?node-id=123-456` → Node ID: `"123:456"` (replace hyphen with colon)
+- Always use quotes: `--nodeId "123:456"`
+
+**From metadata:**
+- XML includes actual node IDs: `id="123:456"`
+- Copy directly into commands
 
 **Page IDs:**
-```
-First page is usually: 0:1
-Second page: 0:2
-etc.
-```
-
-### Finding Node IDs
-
-**Method 1: From Figma URL**
-- Right-click node → "Copy link to selection"
-- Extract `node-id` parameter
-- Replace `-` with `:`
-
-**Method 2: Using get_metadata**
-```bash
-# Get structure of entire page
-node scripts/get_metadata.js --nodeId "0:1"
-
-# Output includes node IDs for all children
-```
-
-**Method 3: Using selection**
-- Select node in Figma Desktop
-- Run any tool without `--nodeId`
-- Works with current selection automatically
+- Pages typically start with `0:` (e.g., `0:1`, `0:2`)
+- Use for getting entire page structure
 
 ## State Persistence
 
 The figma-desktop server maintains state between calls:
-- **Active file**: Works with currently open Figma file
-- **Selection**: Tracks your current node selection
-- **Session**: Persists until Figma Desktop or mcp2rest restarts
-- **Shared state**: All scripts access the same Figma instance
+- Selected node in Figma remains consistent across commands
+- Can run multiple extractions without re-selecting
+- Server state persists until Figma desktop app is closed
+
+**Best practice:** For batch operations, keep Figma desktop app open and navigate to each node before running scripts.
 
 ## Troubleshooting
 
 ### Connection Issues
 
+**Error: Cannot connect to mcp2rest**
 ```bash
-# Check mcp2rest is running
+# 1. Check mcp2rest is running
 curl http://localhost:28888/health
 
-# Verify figma-desktop server is loaded
+# 2. Verify figma-desktop server is loaded
 curl http://localhost:28888/servers
 
-# Should show: "name": "figma-desktop", "status": "connected"
+# 3. Look for figma-desktop in output with "connected" status
 ```
 
-### Figma Desktop Not Responding
+**Error: figma-desktop server not found**
+- Ensure Figma desktop app is running
+- Restart mcp2rest: `mcp2rest restart`
+- Check server URL matches: `http://127.0.0.1:3845/mcp`
 
-**Symptoms:**
-- Tools return errors about connection
-- No data returned from scripts
+### Tool-Specific Issues
 
-**Solutions:**
-1. Ensure Figma Desktop app is running
-2. Restart Figma Desktop app
-3. Restart mcp2rest: `mcp2rest restart`
-4. Check Figma Desktop plugin/extension is enabled
+**No output or empty response**
+- Ensure a node is selected in Figma desktop app
+- Try providing explicit `--nodeId` parameter
+- Verify node ID format uses colon: `"123:456"` not `"123-456"`
 
-### Node ID Errors
+**Wrong framework/language output**
+- Use `--clientFrameworks` to specify: `react`, `vue`, `swiftui`, etc.
+- Use `--clientLanguages` to specify: `typescript`, `javascript`, `swift`
+- Combine multiple: `--clientFrameworks react,typescript`
 
-**Error:** "Node not found" or "Invalid node ID"
+**FigJam extraction fails**
+- Ensure using `get_figjam.js` for FigJam files (not `get_design_context.js`)
+- Check URL contains `/board/` (FigJam) not `/design/` (Figma)
+- FigJam requires `--includeImagesOfNodes` for embedded images
 
-**Solutions:**
-1. Verify node ID format uses `:` not `-` (e.g., `1:2` not `1-2`)
-2. Ensure node exists in currently open file
-3. Check if node ID is from correct file
-4. Try using selection instead of node ID
-
-### Empty or Missing Output
-
-**Symptoms:**
-- get_design_context returns no code
-- get_variable_defs returns empty
-
-**Solutions:**
-1. Check if node has design properties to extract
-2. Try `--forceCode` flag on get_design_context
-3. Ensure correct file is open in Figma Desktop
-4. Verify node contains actual content (not empty frame)
-
-### FigJam Tools Not Working
-
-**Error:** Tool fails on FigJam board
-
-**Solution:**
-- Use `get_figjam` specifically for FigJam boards
-- Regular tools only work with design files, not FigJam
-- Check URL starts with `figma.com/board/` not `figma.com/design/`
-
-### Script Execution Issues
+### Getting Help
 
 ```bash
-# Verify Node.js version (need 18+)
-node --version
-
-# Reinstall dependencies if needed
-cd scripts/
-npm install
-
-# Check script has execute permissions
-ls -la scripts/
-
-# Get help for any tool
-node scripts/tool_name.js --help
+# View help for any script
+node scripts/get_design_context.js --help
+node scripts/get_variable_defs.js --help
+node scripts/get_screenshot.js --help
 ```
 
-## Tips and Best Practices
+## Advanced Usage
 
-### For Design-to-Code Workflows
+### Custom Language/Framework Output
 
-1. **Use framework context** - Always specify `--clientLanguages` and `--clientFrameworks` for better code generation
-2. **Extract variables first** - Get design tokens before extracting code to ensure consistency
-3. **Prefer selection** - Working with selected nodes is faster than finding node IDs
-4. **Batch extractions** - Extract multiple components in sequence for efficiency
+Most tools support `--clientLanguages` and `--clientFrameworks` for customization:
 
-### For Design Systems
+```bash
+# React with TypeScript
+node get_design_context.js --nodeId "12:34" --clientFrameworks react,typescript
 
-1. **Page-level extraction** - Use page ID (e.g., `0:1`) to extract all tokens at once
-2. **Document conventions** - Use create_design_system_rules for consistent naming
-3. **Visual documentation** - Screenshot all token examples for reference
-4. **Version tracking** - Re-extract tokens when design system updates
+# Vue with Composition API
+node get_design_context.js --nodeId "12:34" --clientFrameworks vue,composition-api
 
-### For Documentation
+# SwiftUI
+node get_design_context.js --nodeId "12:34" --clientFrameworks swiftui --clientLanguages swift
 
-1. **Screenshot variants** - Capture all component states for comprehensive docs
-2. **Extract metadata first** - Use get_metadata to plan extraction strategy
-3. **Include context** - Always specify target languages/frameworks in documentation
+# Multiple frameworks for comparison
+node get_design_context.js --nodeId "12:34" --clientFrameworks react,vue,svelte
+```
 
-## Related Commands
+### Batch Processing
 
-- `/m2s:update figma-desktop` - Update this skill with latest tools
-- `/m2s:list` - List all available MCP servers
+Process multiple nodes in sequence:
 
-## Script Location
+```bash
+# Save node IDs to file
+echo "12:34" > nodes.txt
+echo "45:67" >> nodes.txt
+echo "89:01" >> nodes.txt
 
-All scripts are in: `.claude/skills/mcp-figma-desktop/scripts/`
+# Process each node
+while read nodeId; do
+  echo "Processing $nodeId..."
+  node get_design_context.js --nodeId "$nodeId" --clientFrameworks react > "component_${nodeId//:/_}.tsx"
+  node get_screenshot.js --nodeId "$nodeId" > "screenshot_${nodeId//:/_}.png"
+done < nodes.txt
+```
 
-Run from anywhere using full path or navigate to scripts directory first.
+### Integration with Build Tools
+
+Example: Extract design tokens during build:
+
+```json
+{
+  "scripts": {
+    "extract-tokens": "cd .claude/skills/mcp-figma-desktop/scripts && node get_variable_defs.js > ../../src/theme/tokens.json",
+    "prebuild": "npm run extract-tokens"
+  }
+}
+```
+
+## Tips for Best Results
+
+1. **Use specific frameworks:** `--clientFrameworks react` gives better output than generic
+2. **Select precise nodes:** Select the exact component/frame in Figma for accurate extraction
+3. **Verify metadata first:** Use `get_metadata.js` to explore structure before detailed extraction
+4. **Consistent naming:** Use Figma naming conventions that match your code (e.g., `Button/Primary`, `Icon/Close`)
+5. **Design tokens:** Set up variables in Figma for automatic token extraction
+6. **Batch operations:** Keep Figma desktop open and process multiple nodes in sequence for efficiency
+
+## Related Resources
+
+- [Figma Desktop Plugin MCP Server](https://github.com/modelcontextprotocol/servers/tree/main/src/figma-desktop)
+- [mcp2rest Documentation](https://github.com/ulasbilgen/mcp2skill-tools/tree/main/packages/mcp2rest)
+- [Figma Variables Guide](https://help.figma.com/hc/en-us/articles/15339657135383-Guide-to-variables-in-Figma)

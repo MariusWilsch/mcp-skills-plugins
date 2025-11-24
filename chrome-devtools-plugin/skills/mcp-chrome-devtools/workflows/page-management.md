@@ -1,230 +1,218 @@
-# Page Management Tools
+# Page Management Workflows
 
-Manage browser pages: create, navigate, switch between, resize, and close pages.
+Browser window and tab operations for managing multiple pages and navigation.
 
-## Tools in this Group
+## Tools in This Group
 
-### new_page.js
-Create a new browser page (tab).
+### new_page
+Creates a new browser page (tab).
 
-**Usage:**
+**Required:** `--url URL`
+**Optional:** `--timeout MILLISECONDS`
+
 ```bash
-node scripts/new_page.js --url <url> [--timeout <ms>]
-```
-
-**Parameters:**
-- `--url` (required): URL to navigate to
-- `--timeout` (optional): Navigation timeout in milliseconds
-
-**Example:**
-```bash
-node scripts/new_page.js --url https://github.com
 node scripts/new_page.js --url https://example.com --timeout 30000
 ```
 
-### list_pages.js
-List all currently open pages with their indices.
+### list_pages
+Lists all open pages with their indices and URLs.
 
-**Usage:**
 ```bash
 node scripts/list_pages.js
 ```
 
-**Output example:**
+**Output Example:**
 ```
-Page 0: https://github.com (selected)
-Page 1: https://example.com
-Page 2: https://google.com
+Page 0: https://example.com (selected)
+Page 1: https://google.com
+Page 2: https://github.com
 ```
 
-### select_page.js
-Switch context to a different page. All subsequent commands operate on the selected page.
+### select_page
+Switches the active context to a specific page by index.
 
-**Usage:**
+**Required:** `--pageIdx INDEX`
+
 ```bash
-node scripts/select_page.js --pageIdx <index>
+node scripts/select_page.js --pageIdx 1
 ```
 
-**Parameters:**
-- `--pageIdx` (required): Zero-based page index from list_pages
+### navigate_page
+Navigates the currently selected page to a new URL.
 
-**Example:**
+**Optional:** `--url URL`, `--type [navigate|reload|back|forward]`, `--ignoreCache [true|false]`, `--timeout MILLISECONDS`
+
 ```bash
-node scripts/select_page.js --pageIdx 0  # Switch to first page
-node scripts/select_page.js --pageIdx 2  # Switch to third page
+# Navigate to URL
+node scripts/navigate_page.js --url https://example.com/page2
+
+# Reload page
+node scripts/navigate_page.js --type reload --ignoreCache true
+
+# Go back
+node scripts/navigate_page.js --type back
 ```
 
-### close_page.js
-Close a page by its index. Cannot close the last remaining page.
+### resize_page
+Resizes the browser window to specific dimensions.
 
-**Usage:**
-```bash
-node scripts/close_page.js --pageIdx <index>
-```
+**Required:** `--width WIDTH --height HEIGHT`
 
-**Parameters:**
-- `--pageIdx` (required): Zero-based page index to close
-
-**Example:**
-```bash
-node scripts/close_page.js --pageIdx 1
-```
-
-**Note:** Cannot close the last open page.
-
-### navigate_page.js
-Navigate the currently selected page to a new URL.
-
-**Usage:**
-```bash
-node scripts/navigate_page.js [--url <url>] [--type <type>] [--ignoreCache <bool>] [--timeout <ms>]
-```
-
-**Parameters:**
-- `--url` (optional): URL to navigate to
-- `--type` (optional): Navigation type (e.g., "reload")
-- `--ignoreCache` (optional): Ignore browser cache (true/false)
-- `--timeout` (optional): Navigation timeout in milliseconds
-
-**Examples:**
-```bash
-node scripts/navigate_page.js --url https://github.com/explore
-node scripts/navigate_page.js --type reload
-node scripts/navigate_page.js --url https://example.com --ignoreCache true
-```
-
-### resize_page.js
-Resize the browser window to specific dimensions.
-
-**Usage:**
-```bash
-node scripts/resize_page.js --width <pixels> --height <pixels>
-```
-
-**Parameters:**
-- `--width` (required): Window width in pixels
-- `--height` (required): Window height in pixels
-
-**Example:**
 ```bash
 node scripts/resize_page.js --width 1920 --height 1080
-node scripts/resize_page.js --width 375 --height 667  # iPhone size
+```
+
+### close_page
+Closes a page by its index. Cannot close the last remaining page.
+
+**Required:** `--pageIdx INDEX`
+
+```bash
+node scripts/close_page.js --pageIdx 2
 ```
 
 ## Workflows
 
-### Workflow: Multi-Tab Testing
+### Workflow: Open Multiple Research Tabs
 
-Test a workflow across multiple pages simultaneously.
+Open several pages for research or comparison:
 
-**Steps:**
-- [ ] Open first page: `node scripts/new_page.js --url https://app.example.com/login`
-- [ ] Open second page: `node scripts/new_page.js --url https://app.example.com/signup`
-- [ ] List all pages: `node scripts/list_pages.js`
-- [ ] Switch to login page: `node scripts/select_page.js --pageIdx 0`
-- [ ] Test login flow on page 0
-- [ ] Switch to signup page: `node scripts/select_page.js --pageIdx 1`
-- [ ] Test signup flow on page 1
-- [ ] Close signup page: `node scripts/close_page.js --pageIdx 1`
+- [ ] List current pages: `node scripts/list_pages.js`
+- [ ] Open first article: `node scripts/new_page.js --url https://example.com/article1`
+- [ ] Open second article: `node scripts/new_page.js --url https://example.com/article2`
+- [ ] Open third article: `node scripts/new_page.js --url https://example.com/article3`
+- [ ] Verify all open: `node scripts/list_pages.js`
 
-**Example:**
-```bash
-# Open multiple pages
-node scripts/new_page.js --url https://github.com
-node scripts/new_page.js --url https://github.com/login
-node scripts/new_page.js --url https://github.com/pricing
+**Expected Output:**
+Multiple tabs open, each with different content, ready for analysis.
 
-# Check what's open
-node scripts/list_pages.js
+### Workflow: Navigate Through Site Pages
 
-# Work with page 1
-node scripts/select_page.js --pageIdx 1
-node scripts/take_snapshot.js
+Walk through a multi-page flow:
 
-# Clean up
-node scripts/close_page.js --pageIdx 2
-node scripts/close_page.js --pageIdx 1
-```
+- [ ] Start at homepage: `node scripts/new_page.js --url https://example.com`
+- [ ] Take initial snapshot: `node scripts/take_snapshot.js`
+- [ ] Click "About" link: `node scripts/click.js --uid link_about_xyz`
+- [ ] Wait for page load: `node scripts/wait_for.js --text "About Us" --timeout 5000`
+- [ ] Go back: `node scripts/navigate_page.js --type back`
+- [ ] Verify homepage: `node scripts/wait_for.js --text "Welcome" --timeout 5000`
+- [ ] Go forward: `node scripts/navigate_page.js --type forward`
+
+**Expected Output:**
+Browser navigates through pages, back/forward works correctly.
+
+### Workflow: Multi-Tab Data Extraction
+
+Extract data from multiple pages simultaneously:
+
+- [ ] Open page 1: `node scripts/new_page.js --url https://example.com/data/item1`
+- [ ] Take snapshot 1: `node scripts/take_snapshot.js --filePath item1.txt`
+- [ ] Open page 2: `node scripts/new_page.js --url https://example.com/data/item2`
+- [ ] Take snapshot 2: `node scripts/take_snapshot.js --filePath item2.txt`
+- [ ] Open page 3: `node scripts/new_page.js --url https://example.com/data/item3`
+- [ ] Take snapshot 3: `node scripts/take_snapshot.js --filePath item3.txt`
+- [ ] Switch to page 0: `node scripts/select_page.js --pageIdx 0`
+- [ ] Extract from page 0: `node scripts/evaluate_script.js --function "() => document.querySelector('.price').textContent"`
+- [ ] Switch to page 1: `node scripts/select_page.js --pageIdx 1`
+- [ ] Extract from page 1: `node scripts/evaluate_script.js --function "() => document.querySelector('.price').textContent"`
+
+**Expected Output:**
+Data extracted from multiple pages, context switching successful.
 
 ### Workflow: Responsive Design Testing
 
-Test the same page at different viewport sizes.
+Test page at different viewport sizes:
 
-**Steps:**
-- [ ] Open page: `node scripts/new_page.js --url <url>`
-- [ ] Test desktop: `node scripts/resize_page.js --width 1920 --height 1080`
-- [ ] Capture desktop: `node scripts/take_screenshot.js --filePath desktop.png`
-- [ ] Test tablet: `node scripts/resize_page.js --width 768 --height 1024`
-- [ ] Capture tablet: `node scripts/take_screenshot.js --filePath tablet.png`
-- [ ] Test mobile: `node scripts/resize_page.js --width 375 --height 667`
-- [ ] Capture mobile: `node scripts/take_screenshot.js --filePath mobile.png`
+- [ ] Open test page: `node scripts/new_page.js --url https://example.com`
+- [ ] Desktop view: `node scripts/resize_page.js --width 1920 --height 1080`
+- [ ] Take desktop screenshot: `node scripts/take_screenshot.js --fullPage true --filePath desktop.png`
+- [ ] Tablet view: `node scripts/resize_page.js --width 768 --height 1024`
+- [ ] Take tablet screenshot: `node scripts/take_screenshot.js --fullPage true --filePath tablet.png`
+- [ ] Mobile view: `node scripts/resize_page.js --width 375 --height 667`
+- [ ] Take mobile screenshot: `node scripts/take_screenshot.js --fullPage true --filePath mobile.png`
 
-**Example:**
-```bash
-node scripts/new_page.js --url https://example.com
+**Expected Output:**
+Screenshots captured at different viewport sizes for comparison.
 
-# Desktop
-node scripts/resize_page.js --width 1920 --height 1080
-node scripts/take_screenshot.js --filePath desktop.png
+### Workflow: Clean Up Tabs
 
-# iPad
-node scripts/resize_page.js --width 768 --height 1024
-node scripts/take_screenshot.js --filePath ipad.png
+Close unnecessary tabs while keeping important ones:
 
-# iPhone
-node scripts/resize_page.js --width 375 --height 667
-node scripts/take_screenshot.js --filePath iphone.png
-```
+- [ ] List all pages: `node scripts/list_pages.js`
+- [ ] Identify indices to close (e.g., pages 2, 3, 4)
+- [ ] Close page 4: `node scripts/close_page.js --pageIdx 4`
+- [ ] Close page 3: `node scripts/close_page.js --pageIdx 3`
+- [ ] Close page 2: `node scripts/close_page.js --pageIdx 2`
+- [ ] Verify remaining: `node scripts/list_pages.js`
+- [ ] Switch to desired page: `node scripts/select_page.js --pageIdx 0`
 
-### Workflow: Sequential Page Navigation
+**Note:** Close tabs in reverse order (highest index first) to avoid index shifting issues.
 
-Navigate through a series of pages in order.
-
-**Steps:**
-- [ ] Open starting page: `node scripts/new_page.js --url <start-url>`
-- [ ] Navigate to step 2: `node scripts/navigate_page.js --url <step2-url>`
-- [ ] Wait for content: `node scripts/wait_for.js --text "Expected text"`
-- [ ] Navigate to step 3: `node scripts/navigate_page.js --url <step3-url>`
-- [ ] Verify final state: `node scripts/take_snapshot.js`
-
-**Example:**
-```bash
-# Multi-step checkout flow
-node scripts/new_page.js --url https://shop.example.com/cart
-node scripts/wait_for.js --text "Shopping Cart"
-
-node scripts/navigate_page.js --url https://shop.example.com/checkout
-node scripts/wait_for.js --text "Checkout"
-
-node scripts/navigate_page.js --url https://shop.example.com/payment
-node scripts/wait_for.js --text "Payment Information"
-```
+**Expected Output:**
+Unwanted tabs closed, important tabs remain active.
 
 ## Common Patterns
 
-### Opening and Switching Pages
+### Pattern: Safe Page Closing
+
+Always list pages before closing to avoid errors:
+
 ```bash
-# Always get page indices first
+# 1. Check what's open
 node scripts/list_pages.js
 
-# Then switch to the desired page
-node scripts/select_page.js --pageIdx <N>
-```
-
-### Page State Management
-```bash
-# Remember: Currently selected page is the context for all subsequent commands
-node scripts/select_page.js --pageIdx 0
-node scripts/take_snapshot.js  # This snapshots page 0
-
-node scripts/select_page.js --pageIdx 1
-node scripts/take_snapshot.js  # This snapshots page 1
-```
-
-### Cleaning Up Pages
-```bash
-# Close pages in reverse order to avoid index shifting
+# 2. Close specific page (use actual index from list)
 node scripts/close_page.js --pageIdx 2
-node scripts/close_page.js --pageIdx 1
-# Page 0 remains (cannot close last page)
+
+# 3. Verify closure
+node scripts/list_pages.js
 ```
+
+### Pattern: Page Context Switching
+
+When working with multiple pages, always select before interacting:
+
+```bash
+# 1. List to see indices
+node scripts/list_pages.js
+
+# 2. Select target page
+node scripts/select_page.js --pageIdx 1
+
+# 3. Now interact with that page
+node scripts/take_snapshot.js
+node scripts/click.js --uid button_xyz
+```
+
+### Pattern: Reliable Navigation
+
+Use wait_for to ensure page loads before interaction:
+
+```bash
+# 1. Navigate
+node scripts/navigate_page.js --url https://example.com/login
+
+# 2. Wait for key element
+node scripts/wait_for.js --text "Sign In" --timeout 10000
+
+# 3. Now safe to interact
+node scripts/take_snapshot.js
+```
+
+## Troubleshooting
+
+**Problem:** "Cannot close last page" error
+
+**Solution:** You must keep at least one page open. Open a new page before closing the last one.
+
+**Problem:** Page index out of range
+
+**Solution:** Always run `list_pages.js` first to see current indices. Indices shift when pages are closed.
+
+**Problem:** Navigation timeout
+
+**Solution:** Increase timeout value: `--timeout 60000` (60 seconds) for slow-loading pages.
+
+**Problem:** Wrong page context
+
+**Solution:** Use `list_pages.js` to check which page is selected (marked with "selected"). Use `select_page.js` to switch.

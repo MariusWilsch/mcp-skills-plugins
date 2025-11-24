@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ * Tool: get_console_message
+ *
  * Gets a console message by its ID. You can get all messages by calling list_console_messages.
  */
 

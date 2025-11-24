@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: figma-desktop
+ * Server Version: 1.0.0
+ * Generated: 2025-11-23
+ * Tool: get_metadata
+ *
  * IMPORTANT: Always prefer to use get_design_context tool. Get metadata for a node or page in the Figma desktop app in XML format. Useful only for getting an overview of the structure, it only includes node IDs, layer types, names, positions and sizes. You can call get_design_context on the node IDs contained in this response. Use the nodeId parameter to specify a node id, it can also be the page id (e.g. 0:1). If no node id is provided, the currently selected node will be used. If a URL is provided, extract the node id from the URL, for example, if given the URL https://figma.com/design/:fileKey/:fileName?node-id=1-2, the extracted nodeId would be `1:2`.
  */
 

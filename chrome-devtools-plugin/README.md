@@ -1,56 +1,29 @@
-# Chrome DevTools Browser Automation Plugin
+# Chrome DevTools Plugin
 
-Browser automation via Chrome DevTools Protocol. Control Chrome programmatically, interact with pages, debug applications, and analyze performance using mcp2rest.
+Browser automation and DevTools control. Navigate pages, interact with elements, inspect network/console, analyze performance, and capture screenshots for web testing and automation tasks.
 
 ## Overview
 
-This plugin provides comprehensive browser automation capabilities through the chrome-devtools MCP server integration. Automate web tasks, test applications, fill forms, debug frontend issues, and measure performance using the Chrome DevTools Protocol.
+This plugin provides comprehensive browser automation capabilities through the chrome-devtools MCP server integration. Control Chrome browser programmatically using the Chrome DevTools Protocol with 26 specialized tools for web automation, testing, scraping, and performance analysis.
 
-**Key Features:**
-- **26 automation tools** organized into 4 functional groups
-- **Browser control**: Navigate, click, fill forms, drag and drop
-- **Debugging**: Console logs, network monitoring, JavaScript execution
-- **Performance testing**: Core Web Vitals, throttling, performance insights
-- **Visual testing**: Screenshots and page structure snapshots
+**Generated from MCP server:** chrome-devtools-mcp@0.10.2
 
-**Generated from MCP server:** chrome-devtools-mcp@1.0.2
+## Key Features
+
+- **Browser Automation:** Automate form filling, button clicks, navigation, and complex user workflows
+- **Web Scraping:** Extract data from websites with element snapshots and JavaScript evaluation
+- **E2E Testing:** Build comprehensive end-to-end tests with built-in verification steps
+- **Performance Analysis:** Measure Core Web Vitals (LCP, FID, CLS) and generate performance insights
+- **Debugging Tools:** Inspect console logs, monitor network requests, and capture screenshots
+- **Multi-Tab Management:** Handle multiple browser pages and switch contexts seamlessly
 
 ## Prerequisites
 
-Before using this plugin, ensure you have:
-
-- **Claude Code** installed and running
+- **Claude Code** installed
 - **Node.js** >= 18.0.0
-- **mcp2rest** installed and running
-- **chrome-devtools MCP server** configured in mcp2rest
+- **Chrome/Chromium** browser installed
 
-### Installing mcp2rest
-
-If you haven't already, install mcp2rest globally:
-
-```bash
-npm install -g mcp2rest
-mcp2rest start
-```
-
-Verify mcp2rest is running:
-```bash
-curl http://localhost:28888/health
-```
-
-### Configuring the MCP Server
-
-Add the chrome-devtools server to mcp2rest:
-
-```bash
-# Add the MCP server with specific version
-mcp2rest add chrome-devtools chrome-devtools-mcp@1.0.2
-
-# Verify it's loaded and connected
-mcp2rest list
-```
-
-You should see chrome-devtools in the list with status "connected".
+The plugin automatically configures the chrome-devtools MCP server when installed.
 
 ## Installation
 
@@ -64,11 +37,9 @@ You should see chrome-devtools in the list with status "connected".
 /plugin install chrome-devtools-plugin@mcp-skills-plugins
 ```
 
-**Restart Claude Code** to activate the plugin and agent.
+Restart Claude Code to activate the plugin.
 
 ### Local Development
-
-For local testing or development:
 
 ```bash
 # Clone the marketplace repository
@@ -81,255 +52,297 @@ git clone https://github.com/ulasbilgen/mcp-skills-plugins.git
 /plugin install chrome-devtools-plugin@mcp-skills-plugins
 ```
 
-Restart Claude Code to complete installation.
-
 ## Quick Start
 
-After installation, try this simple automation:
+After installation, you can start automating browser tasks immediately:
 
-```bash
-# 1. Open a web page
-node skills/mcp-chrome-devtools/scripts/new_page.js --url https://github.com/login
+### Basic Browser Automation
 
-# 2. Get the page structure with element identifiers
-node skills/mcp-chrome-devtools/scripts/take_snapshot.js
-
-# Output shows interactive elements with UIDs:
-# TextField "Username or email" [uid: input_0]
-# TextField "Password" [uid: input_1]
-# Button "Sign in" [uid: button_0]
-
-# 3. Fill the login form
-node skills/mcp-chrome-devtools/scripts/fill.js --uid input_0 --value "myusername"
-node skills/mcp-chrome-devtools/scripts/fill.js --uid input_1 --value "mypassword"
-
-# 4. Click sign in
-node skills/mcp-chrome-devtools/scripts/click.js --uid button_0
-
-# 5. Wait for the dashboard to load
-node skills/mcp-chrome-devtools/scripts/wait_for.js --text "Dashboard"
 ```
+> Use chrome-devtools to open https://example.com and take a screenshot
+```
+
+The agent will:
+1. Open a new browser page
+2. Navigate to the URL
+3. Wait for the page to load
+4. Capture a screenshot
+
+### Automated Form Filling
+
+```
+> Use chrome-devtools to fill out the login form at https://example.com/login
+> Email: test@example.com, Password: mypassword
+```
+
+The agent will:
+1. Open the login page
+2. Take a snapshot to identify form elements
+3. Fill in the email and password fields
+4. Submit the form
+5. Verify successful login
+
+### Web Scraping
+
+```
+> Use chrome-devtools to extract all product titles from https://example.com/products
+```
+
+The agent will:
+1. Navigate to the products page
+2. Wait for content to load
+3. Use JavaScript to extract product titles
+4. Return the structured data
+
+### Performance Testing
+
+```
+> Use chrome-devtools to analyze the performance of https://example.com
+```
+
+The agent will:
+1. Start a performance trace
+2. Load the page with reload
+3. Stop the trace and extract Core Web Vitals
+4. Provide performance insights and recommendations
 
 ## Available Capabilities
 
-This plugin provides 26 automation tools organized into 4 groups:
-
 ### 1. Page Management (6 tools)
-Manage browser pages and navigation:
-- Create new pages/tabs
-- Navigate to URLs
-- Switch between multiple pages
-- Close pages
-- Resize viewport for responsive testing
+- Create new browser pages/tabs
+- Navigate between pages (forward, back, reload)
+- Switch between multiple tabs
+- Resize browser window for responsive testing
+- Close specific pages
 
-### 2. Element Interaction (8 tools)
-Interact with web page elements:
-- **Critical**: `take_snapshot.js` - Get page structure with element UIDs
-- Click buttons and links
-- Fill form fields (single or bulk)
-- Hover over elements
-- Drag and drop
-- Keyboard input
-- Upload files
+### 2. Element Interaction (7 tools)
+- Click on buttons, links, and other elements
+- Fill text inputs and select dropdown options
+- Fill multiple form fields at once
+- Hover over elements to trigger tooltips/menus
+- Drag and drop elements
+- Upload files through file inputs
+- Press keyboard keys and shortcuts
 
-### 3. Inspection & Debugging (8 tools)
-Debug and monitor web applications:
-- Capture screenshots (full page or specific elements)
-- Monitor console logs and errors
-- Track network requests and responses
-- Execute JavaScript in page context
-- Handle browser dialogs (alerts, confirms, prompts)
-- Wait for content to appear
+### 3. Inspection & Debugging (6 tools)
+- Take text snapshots of page structure with element UIDs
+- Capture visual screenshots (full page or specific elements)
+- List and inspect console messages (logs, warnings, errors)
+- Monitor network requests and responses
+- Debug frontend issues with detailed inspection
 
-### 4. Performance Analysis (4 tools)
-Measure and analyze web performance:
-- Record performance traces
-- Measure Core Web Vitals (LCP, CLS, INP)
-- Analyze performance insights
-- Emulate network throttling and CPU slowdown
+### 4. Performance Analysis (7 tools)
+- Execute custom JavaScript in page context
+- Wait for specific text to appear (dynamic content)
+- Handle browser dialogs (alert, confirm, prompt)
+- Emulate network conditions (3G, 4G, throttling)
+- Record performance traces with Core Web Vitals
+- Analyze specific performance insights
+- Test under various CPU and network constraints
 
 ## Using the Agent
 
-After installation, the `chrome-devtools` agent will be available in Claude Code.
+After installation, the `chrome-devtools` agent will be available automatically.
 
-### View Available Agents
-
-```bash
-/agents
-```
-
-You should see the chrome-devtools agent in the list.
-
-### Invoke the Agent Explicitly
+### Explicit Invocation
 
 ```
-> Use the chrome-devtools agent to open example.com and take a screenshot
-
-> Have the chrome-devtools agent fill out the contact form on mysite.com
-
-> Ask the chrome-devtools agent to measure the performance of my landing page
+> Use the chrome-devtools agent to automate a checkout flow
 ```
 
 ### Automatic Invocation
 
-Claude will automatically invoke the chrome-devtools agent when you request browser automation tasks:
+Claude will automatically use this agent when you request browser automation tasks:
 
 ```
-> Automate filling out the login form on github.com
-
-> Check the console errors on my website
-
-> Measure the Core Web Vitals for this URL
-
-> Take a screenshot of the homepage
+> Fill out the registration form at https://example.com/signup
+> Test the login flow on my website
+> Extract all article titles from this news site
+> Measure the performance of my landing page
 ```
 
 ## Documentation
 
-Complete skill documentation is available within the plugin:
+Complete skill documentation is available in the plugin directory:
 
-- **Main documentation**: `skills/mcp-chrome-devtools/SKILL.md`
-  - Prerequisites and setup
-  - Quick start guide
-  - Tool groups overview
-  - Common workflows
-  - State management
+- **`skills/mcp-chrome-devtools/SKILL.md`** - Main documentation and tool reference
 
-- **Detailed workflows**: `skills/mcp-chrome-devtools/workflows/`
-  - `page-management.md` - Page lifecycle and navigation
-  - `element-interaction.md` - Forms, clicks, drag-and-drop
-  - `inspection-debugging.md` - Debugging and monitoring
-  - `performance-analysis.md` - Performance testing and Core Web Vitals
+### Workflow Guides
 
-- **Reference documentation**: `skills/mcp-chrome-devtools/reference/`
-  - `all-tools.md` - Complete tool listing with examples
-  - `troubleshooting.md` - Common issues and solutions
-  - `advanced-examples.md` - Complex real-world workflows
+- **`workflows/page-management.md`** - Browser window and tab operations
+- **`workflows/element-interaction.md`** - User input simulation and form filling
+- **`workflows/inspection-debugging.md`** - Monitoring, debugging, and data extraction
+- **`workflows/performance-analysis.md`** - Performance testing and optimization
 
-## Common Use Cases
+### Reference Documentation
 
-### Form Automation
+- **`reference/all-tools.md`** - Complete alphabetical listing of all 26 tools
+- **`reference/troubleshooting.md`** - Common issues and solutions
+- **`reference/advanced-examples.md`** - Production-ready patterns and CI/CD integration
+
+## Example Use Cases
+
+### E2E Testing
 ```
-> Fill out the contact form on example.com with name "John Doe" and email "john@example.com"
-```
-
-### Web Application Testing
-```
-> Test the login flow on my staging site and verify it redirects to the dashboard
+> Test the complete user registration flow:
+> 1. Fill registration form
+> 2. Verify email validation
+> 3. Submit and check for success message
+> 4. Capture screenshots at each step
 ```
 
-### Performance Testing
+### Web Scraping
 ```
-> Measure the Core Web Vitals for my landing page and test it under Slow 3G conditions
+> Scrape the following data from https://example.com/listings:
+> - Product names
+> - Prices
+> - Availability status
+> Save to JSON file
 ```
 
-### Debugging
+### Performance Monitoring
 ```
-> Check if there are any console errors on example.com and list any failed network requests
+> Run performance tests on https://example.com under:
+> - Fast 4G network
+> - Slow 3G network
+> Compare Core Web Vitals and identify bottlenecks
 ```
 
-### Visual Testing
+### Visual Regression Testing
 ```
-> Take full-page screenshots of my homepage at desktop, tablet, and mobile sizes
+> Capture screenshots of https://example.com at:
+> - Desktop (1920x1080)
+> - Tablet (768x1024)
+> - Mobile (375x667)
+```
+
+### Debugging Frontend Issues
+```
+> Debug the form submission at https://example.com/contact:
+> - Check console for errors
+> - Monitor network requests
+> - Verify API responses
+> - Capture error screenshots
 ```
 
 ## Troubleshooting
 
-### mcp2rest Connection Issues
+### MCP Server Not Running
 
-If tools fail with connection errors:
+If you see errors about the chrome-devtools server not being available:
 
-```bash
-# Check if mcp2rest is running
-curl http://localhost:28888/health
+1. The plugin automatically configures the MCP server via `plugin.json`
+2. Restart Claude Code to ensure the server is loaded
+3. Check the Claude Code logs for any startup errors
 
-# Expected: {"status":"ok"}
+### Chrome Browser Not Found
 
-# Verify chrome-devtools server is loaded
-curl http://localhost:28888/servers
+The chrome-devtools MCP server requires Chrome or Chromium installed:
 
-# Should show chrome-devtools with status "connected"
-
-# If server is disconnected, restart mcp2rest
-mcp2rest restart
-```
+- **macOS:** Install Chrome from https://www.google.com/chrome/
+- **Linux:** `sudo apt install chromium-browser` or install Chrome
+- **Windows:** Install Chrome from https://www.google.com/chrome/
 
 ### Script Execution Issues
 
-If scripts fail to run:
+If scripts fail to execute:
 
-```bash
-# Verify Node.js version (need 18+)
-node --version
+1. **Check Node.js version** (need 18+):
+   ```bash
+   node --version
+   ```
 
-# Check if script dependencies are installed
-ls chrome-devtools-plugin/skills/mcp-chrome-devtools/scripts/node_modules/
+2. **Install dependencies** (already done during plugin installation):
+   ```bash
+   cd ~/.claude/plugins/chrome-devtools-plugin/skills/mcp-chrome-devtools/scripts
+   npm install
+   ```
 
-# If missing, install dependencies
-cd chrome-devtools-plugin/skills/mcp-chrome-devtools/scripts
-npm install
-```
+3. **Verify file paths** use forward slashes (not backslashes)
 
-### Element Not Found Errors
+### Element UIDs Not Found
 
-If click or fill operations fail with "element not found":
+Element UIDs regenerate on each snapshot. Always:
+1. Take a fresh snapshot before interaction
+2. Immediately use the UIDs from that snapshot
+3. Never reuse UIDs from previous snapshots
 
-1. Element UIDs change dynamically - always take a fresh snapshot before interacting
-2. Ensure the page has finished loading - use `wait_for.js` first
-3. Check if the element is visible (not hidden by CSS or JavaScript)
+### Common Error Messages
 
-```bash
-# Correct workflow
-node scripts/take_snapshot.js       # Get fresh UIDs
-node scripts/click.js --uid button_0  # Use UID from snapshot
-```
+**"Cannot connect to Chrome"**
+- Ensure Chrome/Chromium is installed
+- Check if another Chrome DevTools session is active
+- Restart Claude Code to reinitialize the MCP server
 
-### Agent Not Available
+**"Navigation timeout"**
+- Increase timeout value in commands
+- Check network connectivity
+- Verify the URL is correct and accessible
 
-If the chrome-devtools agent doesn't appear:
+**"Screenshot is blank"**
+- Wait for page to fully render before capturing
+- Use `--fullPage true` for full page screenshots
+- Verify page loaded correctly with a snapshot first
 
-1. Verify plugin is installed: `/plugin` → "Manage Plugins"
-2. Restart Claude Code after installation
-3. Check `/agents` to see if the agent is listed
-4. Ensure mcp2rest and chrome-devtools server are running
+For more troubleshooting help, see `skills/mcp-chrome-devtools/reference/troubleshooting.md`.
 
-For more troubleshooting information, see `skills/mcp-chrome-devtools/reference/troubleshooting.md`.
+## Best Practices
+
+1. **Always take snapshots before interaction** - Element UIDs change each time
+2. **Use wait_for for dynamic content** - Don't assume instant page loads
+3. **Capture evidence** - Take screenshots and snapshots for verification
+4. **Check console and network** - Debug issues with inspection tools
+5. **Handle state properly** - Browser instance persists between commands
+6. **Use absolute file paths** - Always use forward slashes in paths
 
 ## Contributing
 
-Found an issue or have improvements for this plugin?
-
-1. **Check existing issues**: https://github.com/ulasbilgen/mcp-skills-plugins/issues
-2. **Submit bug reports**: Include reproduction steps and error messages
-3. **Propose enhancements**: Open a pull request with your changes
-
-Please follow the contribution guidelines in the marketplace repository.
+Found an issue or have improvements? Please:
+1. Check existing issues: https://github.com/ulasbilgen/mcp-skills-plugins/issues
+2. Submit bug reports with reproduction steps
+3. Propose enhancements via pull requests
 
 ## Version Information
 
-- **Plugin version:** 0.5.0
-- **MCP server:** chrome-devtools-mcp@1.0.2
+- **Plugin version:** 0.5.1
+- **MCP server:** chrome-devtools-mcp@0.10.2
 - **Generated with:** [mcp2skill-tools](https://github.com/ulasbilgen/mcp2skill-tools)
-- **Requires:** mcp2rest for MCP server communication
+- **MCP server configuration:** Bundled in plugin.json
+
+## Architecture
+
+This plugin follows the mcp-skills-plugins architecture:
+
+```
+chrome-devtools-plugin/
+├── .claude-plugin/
+│   └── plugin.json          # Plugin manifest with MCP server config
+├── agents/
+│   └── chrome-devtools.md   # Agent specialized in browser automation
+├── skills/
+│   └── mcp-chrome-devtools/ # Generated skill with 26 tools
+│       ├── SKILL.md         # Main skill documentation
+│       ├── scripts/         # JavaScript tools (26 scripts)
+│       ├── workflows/       # Detailed workflow guides
+│       └── reference/       # Complete tool reference
+└── README.md                # This file
+```
+
+The MCP server (chrome-devtools-mcp) is automatically started by Claude Code using the configuration in `plugin.json`. No manual mcp2rest setup required.
 
 ## License
 
 MIT License - See repository for details.
 
-## Links
-
-- **Marketplace**: https://github.com/ulasbilgen/mcp-skills-plugins
-- **MCP Server**: chrome-devtools-mcp (Chrome DevTools Protocol integration)
-- **mcp2rest**: https://www.npmjs.com/package/mcp2rest
-- **mcp2scripts**: https://www.npmjs.com/package/mcp2scripts
-
 ## Support
 
-For issues and questions:
-- Plugin issues: Open an issue in the marketplace repository
-- MCP server issues: Check the chrome-devtools-mcp documentation
-- mcp2rest issues: See mcp2rest documentation
+For questions and support:
+- **Documentation:** See `skills/mcp-chrome-devtools/SKILL.md`
+- **Issues:** https://github.com/ulasbilgen/mcp-skills-plugins/issues
+- **MCP Server:** https://github.com/modelcontextprotocol/servers/tree/main/src/chrome-devtools
 
----
+## Acknowledgments
 
-**Note**: This plugin requires an active mcp2rest server with the chrome-devtools MCP server loaded. Ensure both are running before using the automation tools.
+- Built with [mcp2skill-tools](https://github.com/ulasbilgen/mcp2skill-tools)
+- Powered by [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/)
+- Part of the [Model Context Protocol](https://modelcontextprotocol.io) ecosystem

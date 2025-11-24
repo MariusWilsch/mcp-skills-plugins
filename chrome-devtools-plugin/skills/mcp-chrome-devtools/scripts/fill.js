@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ * Tool: fill
+ *
  * Type text into a input, text area or select an option from a <select> element.
  */
 

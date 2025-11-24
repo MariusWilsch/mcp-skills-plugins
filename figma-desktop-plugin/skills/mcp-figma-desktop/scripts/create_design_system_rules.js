@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: figma-desktop
+ * Server Version: 1.0.0
+ * Generated: 2025-11-23
+ * Tool: create_design_system_rules
+ *
  * Provides a prompt to generate design system rules for this repo.
  */
 

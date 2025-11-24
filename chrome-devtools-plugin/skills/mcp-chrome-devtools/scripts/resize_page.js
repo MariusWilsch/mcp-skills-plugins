@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ * Tool: resize_page
+ *
  * Resizes the selected page's window so that the page has specified dimension
  */
 

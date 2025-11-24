@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: figma-desktop
+ * Server Version: 1.0.0
+ * Generated: 2025-11-23
+ * Tool: get_figjam
+ *
  * Generate UI code for a given FigJam node or the currently selected FigJam node in the Figma desktop app. Use the nodeId parameter to specify a node id. If no node id is provided, the currently selected node will be used. If a URL is provided, extract the node id from the URL, for example, if given the URL https://figma.com/board/:fileKey/:fileName?node-id=1-2, the extracted nodeId would be `1:2`. IMPORTANT: This tool only works for FigJam files, not other Figma files.
  */
 

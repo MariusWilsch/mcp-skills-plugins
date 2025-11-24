@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ * Tool: list_console_messages
+ *
  * List all console messages for the currently selected page since the last navigation.
  */
 

@@ -1,0 +1,12 @@
+{
+  "serverName": "chrome-devtools",
+  "serverVersion": "0.10.2",
+  "serverVersionInfo": {
+    "name": "chrome_devtools",
+    "title": "Chrome DevTools MCP server",
+    "version": "0.10.2"
+  },
+  "generatedAt": "2025-11-23T22:51:09.827Z",
+  "mcp2scriptsVersion": "0.3.1",
+  "mcp2restUrl": "http://localhost:28888"
+}

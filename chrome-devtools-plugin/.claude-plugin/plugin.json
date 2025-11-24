@@ -1,7 +1,7 @@
 {
   "name": "chrome-devtools-plugin",
-  "description": "Browser automation via Chrome DevTools Protocol. Control Chrome programmatically, interact with pages, debug applications, and analyze performance using mcp2rest.",
-  "version": "0.5.0",
+  "description": "Browser automation and DevTools control. Navigate pages, interact with elements, inspect network/console, analyze performance, and capture screenshots for web testing and automation tasks.",
+  "version": "0.5.1",
   "author": {
     "name": "ulasbilgen"
   }

@@ -6,7 +6,7 @@ Design-to-code automation via Figma Desktop. Extract UI code, design tokens, and
 
 This plugin provides design-to-code automation capabilities through the Figma Desktop MCP server integration. Extract production-ready React, Vue, or HTML/CSS code directly from your Figma designs, along with design system variables and component screenshots.
 
-**Generated from MCP server:** Figma Desktop (built-in MCP server) v1.0.0
+**Generated from MCP server:** figma-desktop@1.0.0
 
 ## Prerequisites
 
@@ -412,8 +412,8 @@ Found an issue or have improvements? Please:
 
 ## Version Information
 
-- **Plugin version:** 0.5.0
-- **MCP server:** Figma Desktop (built-in MCP server) v1.0.0
+- **Plugin version:** 0.5.1
+- **MCP server:** figma-desktop@1.0.0
 - **Transport:** HTTP (http://127.0.0.1:3845/mcp)
 - **Tools:** 6 design-to-code tools
 - **Generated with:** [mcp2skill-tools](https://github.com/ulasbilgen/mcp2skill-tools)

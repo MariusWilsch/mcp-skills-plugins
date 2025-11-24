@@ -1,0 +1,12 @@
+{
+  "serverName": "figma-desktop",
+  "serverVersion": "1.0.0",
+  "serverVersionInfo": {
+    "name": "Figma Dev Mode MCP Server",
+    "version": "1.0.0",
+    "websiteUrl": "https://developers.figma.com/docs/figma-mcp-server/"
+  },
+  "generatedAt": "2025-11-23T23:49:37.592Z",
+  "mcp2scriptsVersion": "0.3.1",
+  "mcp2restUrl": "http://localhost:28888"
+}

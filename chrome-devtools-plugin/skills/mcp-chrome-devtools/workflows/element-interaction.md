@@ -1,355 +1,310 @@
-# Element Interaction Tools
+# Element Interaction Workflows
 
-Interact with page elements: click, fill forms, drag, upload files, and keyboard input.
+User input simulation for clicking, typing, form filling, and drag & drop operations.
 
-## Critical First Step: take_snapshot.js
+## Tools in This Group
 
-**Always start with a snapshot** to get element UIDs before interacting with elements.
+### click
+Clicks on an element identified by its UID.
 
-**Usage:**
+**Required:** `--uid UID`
+**Optional:** `--dblClick [true|false]`
+
 ```bash
-node scripts/take_snapshot.js [--verbose <bool>] [--filePath <path>]
+# Single click
+node scripts/click.js --uid button_submit_abc123
+
+# Double click
+node scripts/click.js --uid file_icon_xyz789 --dblClick true
 ```
 
-**Parameters:**
-- `--verbose` (optional): Include more details about elements
-- `--filePath` (optional): Save snapshot to file
+### fill
+Types text into inputs, textareas, or selects options in dropdown menus.
 
-**Example output:**
-```
-Page: https://github.com/login
-TextField "Username or email address" [uid: input_0]
-TextField "Password" [uid: input_1]
-Button "Sign in" [uid: button_0]
-Link "Forgot password?" [uid: link_0]
-```
+**Required:** `--uid UID --value VALUE`
 
-## Tools in this Group
-
-### click.js
-Click on an element by its UID.
-
-**Usage:**
 ```bash
-node scripts/click.js --uid <element-uid> [--dblClick <bool>]
+# Fill text input
+node scripts/fill.js --uid input_username_abc --value john.doe
+
+# Fill textarea
+node scripts/fill.js --uid textarea_comment_def --value "This is a comment"
+
+# Select dropdown option
+node scripts/fill.js --uid select_country_ghi --value "United States"
 ```
 
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
-- `--dblClick` (optional): Perform double-click (true/false)
+### fill_form
+Fills multiple form fields at once using a JSON array.
 
-**Examples:**
+**Required:** `--elements JSON_ARRAY`
+
 ```bash
-node scripts/click.js --uid button_0
-node scripts/click.js --uid link_5
-node scripts/click.js --uid button_submit --dblClick true
+node scripts/fill_form.js --elements '[{"uid":"input_email","value":"test@example.com"},{"uid":"input_password","value":"secret123"}]'
 ```
 
-### fill.js
-Fill a single form field (input, textarea, or select).
+### hover
+Hovers the mouse over an element.
 
-**Usage:**
+**Required:** `--uid UID`
+
 ```bash
-node scripts/fill.js --uid <element-uid> --value <text>
+node scripts/hover.js --uid tooltip_trigger_abc
 ```
 
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
-- `--value` (required): Text to enter or option to select
+### drag
+Drags one element onto another element.
 
-**Examples:**
+**Required:** `--from-uid FROM_UID --to-uid TO_UID`
+
 ```bash
-node scripts/fill.js --uid input_0 --value "username@example.com"
-node scripts/fill.js --uid textarea_0 --value "This is a multi-line comment"
-node scripts/fill.js --uid select_0 --value "Option 2"
+node scripts/drag.js --from-uid draggable_item_abc --to-uid dropzone_xyz
 ```
 
-### fill_form.js
-Fill multiple form fields at once.
+### upload_file
+Uploads a file through a file input element.
 
-**Usage:**
+**Required:** `--uid UID --filePath FILEPATH`
+
 ```bash
-node scripts/fill_form.js --elements '<json-array>'
+node scripts/upload_file.js --uid input_file_upload --filePath /Users/username/documents/resume.pdf
 ```
 
-**Parameters:**
-- `--elements` (required): JSON array of `{uid, value}` objects
+### press_key
+Presses a key or key combination (for keyboard shortcuts, navigation, special keys).
 
-**Example:**
+**Required:** `--key KEY`
+
 ```bash
-node scripts/fill_form.js --elements '[
-  {"uid": "input_0", "value": "john@example.com"},
-  {"uid": "input_1", "value": "John Doe"},
-  {"uid": "textarea_0", "value": "Message text"}
-]'
+# Single key
+node scripts/press_key.js --key Enter
+
+# Key combination
+node scripts/press_key.js --key "Control+S"
+
+# Navigation
+node scripts/press_key.js --key ArrowDown
 ```
-
-**Use case:** More efficient than multiple `fill.js` calls when filling entire forms.
-
-### hover.js
-Hover over an element to reveal tooltips, dropdowns, or trigger hover effects.
-
-**Usage:**
-```bash
-node scripts/hover.js --uid <element-uid>
-```
-
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
-
-**Example:**
-```bash
-node scripts/hover.js --uid button_info  # Show tooltip
-node scripts/hover.js --uid nav_menu     # Open dropdown
-```
-
-### drag.js
-Drag an element onto another element (drag-and-drop).
-
-**Usage:**
-```bash
-node scripts/drag.js --from-uid <source-uid> --to-uid <target-uid>
-```
-
-**Parameters:**
-- `--from-uid` (required): UID of element to drag
-- `--to-uid` (required): UID of drop target
-
-**Example:**
-```bash
-node scripts/drag.js --from-uid item_3 --to-uid dropzone_0
-node scripts/drag.js --from-uid card_1 --to-uid column_2
-```
-
-### press_key.js
-Press keyboard keys or key combinations.
-
-**Usage:**
-```bash
-node scripts/press_key.js --key <key-or-combo>
-```
-
-**Parameters:**
-- `--key` (required): Key name or combination (e.g., "Enter", "Control+C")
-
-**Examples:**
-```bash
-node scripts/press_key.js --key "Enter"
-node scripts/press_key.js --key "Tab"
-node scripts/press_key.js --key "Escape"
-node scripts/press_key.js --key "Control+A"
-node scripts/press_key.js --key "Meta+S"  # Cmd+S on Mac
-```
-
-**Use cases:**
-- Submit forms without clicking buttons
-- Navigate with Tab/Enter
-- Trigger keyboard shortcuts
-- Close modals with Escape
-
-### upload_file.js
-Upload a file through a file input element.
-
-**Usage:**
-```bash
-node scripts/upload_file.js --uid <element-uid> --filePath <absolute-path>
-```
-
-**Parameters:**
-- `--uid` (required): UID of file input element
-- `--filePath` (required): Absolute path to file
-
-**Example:**
-```bash
-node scripts/upload_file.js --uid input_file_0 --filePath /Users/me/documents/resume.pdf
-node scripts/upload_file.js --uid file_upload --filePath /tmp/image.png
-```
-
-**Important:** File path must be absolute, not relative.
 
 ## Workflows
 
 ### Workflow: Login Form Automation
 
-Fill and submit a login form.
+Complete login process with validation:
 
-**Steps:**
-- [ ] Open login page: `node scripts/new_page.js --url <login-url>`
+- [ ] Open login page: `node scripts/new_page.js --url https://example.com/login`
+- [ ] Wait for form: `node scripts/wait_for.js --text "Sign In" --timeout 5000`
 - [ ] Get element UIDs: `node scripts/take_snapshot.js`
-- [ ] Identify username and password field UIDs
-- [ ] Fill username: `node scripts/fill.js --uid <username-uid> --value <username>`
-- [ ] Fill password: `node scripts/fill.js --uid <password-uid> --value <password>`
-- [ ] Click login button: `node scripts/click.js --uid <button-uid>`
-- [ ] Wait for redirect: `node scripts/wait_for.js --text "Dashboard"`
-- [ ] Verify login: `node scripts/take_snapshot.js`
+- [ ] Fill username: `node scripts/fill.js --uid input_username_a1b2 --value testuser`
+- [ ] Fill password: `node scripts/fill.js --uid input_password_c3d4 --value mypassword123`
+- [ ] Submit form: `node scripts/click.js --uid button_submit_e5f6`
+- [ ] Wait for redirect: `node scripts/wait_for.js --text "Dashboard" --timeout 10000`
+- [ ] Verify login: `node scripts/take_screenshot.js --filePath logged_in.png`
 
-**Example:**
-```bash
-node scripts/new_page.js --url https://app.example.com/login
-node scripts/take_snapshot.js
-# Output shows: input_0 (email), input_1 (password), button_0 (submit)
-
-node scripts/fill.js --uid input_0 --value "user@example.com"
-node scripts/fill.js --uid input_1 --value "secretpass123"
-node scripts/click.js --uid button_0
-node scripts/wait_for.js --text "Welcome"
+**Input Example:**
+```
+Username field UID: input_username_a1b2
+Password field UID: input_password_c3d4
+Submit button UID: button_submit_e5f6
 ```
 
-### Workflow: Complex Form with File Upload
+**Expected Output:**
+User logged in successfully, redirected to dashboard.
 
-Fill a multi-field form including file upload.
+### Workflow: Multi-Field Form with Dropdowns
 
-**Steps:**
-- [ ] Open form page: `node scripts/new_page.js --url <form-url>`
-- [ ] Get element UIDs: `node scripts/take_snapshot.js`
-- [ ] Fill text fields using `fill_form.js` for efficiency
-- [ ] Upload file: `node scripts/upload_file.js --uid <file-input-uid> --filePath <path>`
-- [ ] Submit form: `node scripts/click.js --uid <submit-uid>`
-- [ ] Verify submission: `node scripts/wait_for.js --text "Success"`
+Fill complex form with various input types:
 
-**Example:**
+- [ ] Navigate to form: `node scripts/new_page.js --url https://example.com/signup`
+- [ ] Get structure: `node scripts/take_snapshot.js`
+- [ ] Fill first name: `node scripts/fill.js --uid input_firstname --value John`
+- [ ] Fill last name: `node scripts/fill.js --uid input_lastname --value Doe`
+- [ ] Fill email: `node scripts/fill.js --uid input_email --value john.doe@example.com`
+- [ ] Select country: `node scripts/fill.js --uid select_country --value "United States"`
+- [ ] Select state: `node scripts/fill.js --uid select_state --value California`
+- [ ] Fill textarea: `node scripts/fill.js --uid textarea_bio --value "Software engineer with 5 years experience"`
+- [ ] Submit: `node scripts/click.js --uid button_register`
+- [ ] Verify: `node scripts/wait_for.js --text "Registration successful" --timeout 10000`
+
+**Expected Output:**
+All form fields filled correctly, registration completed.
+
+### Workflow: Bulk Form Filling
+
+Use fill_form for efficient multi-field updates:
+
+- [ ] Open form: `node scripts/new_page.js --url https://example.com/profile`
+- [ ] Identify UIDs: `node scripts/take_snapshot.js`
+- [ ] Fill all fields at once:
 ```bash
-node scripts/new_page.js --url https://example.com/job-application
-node scripts/take_snapshot.js
-
-# Fill multiple fields at once
 node scripts/fill_form.js --elements '[
-  {"uid": "input_name", "value": "Jane Smith"},
-  {"uid": "input_email", "value": "jane@example.com"},
-  {"uid": "input_phone", "value": "555-0123"},
-  {"uid": "textarea_cover", "value": "I am excited to apply..."}
+  {"uid":"input_name","value":"John Doe"},
+  {"uid":"input_email","value":"john@example.com"},
+  {"uid":"input_phone","value":"555-1234"},
+  {"uid":"select_timezone","value":"America/Los_Angeles"}
 ]'
-
-# Upload resume
-node scripts/upload_file.js --uid input_resume --filePath /Users/me/resume.pdf
-
-# Submit
-node scripts/click.js --uid button_submit
-node scripts/wait_for.js --text "Application received"
 ```
+- [ ] Review changes: `node scripts/take_snapshot.js`
+- [ ] Save: `node scripts/click.js --uid button_save`
+- [ ] Verify: `node scripts/wait_for.js --text "Profile updated" --timeout 5000`
+
+**Expected Output:**
+All fields updated in single operation, profile saved successfully.
+
+### Workflow: File Upload with Validation
+
+Upload a file and verify success:
+
+- [ ] Navigate to upload page: `node scripts/new_page.js --url https://example.com/upload`
+- [ ] Get file input UID: `node scripts/take_snapshot.js`
+- [ ] Select file: `node scripts/upload_file.js --uid input_file_abc123 --filePath /Users/username/documents/report.pdf`
+- [ ] Wait for preview: `node scripts/wait_for.js --text "report.pdf" --timeout 5000`
+- [ ] Verify file name appears: `node scripts/take_snapshot.js`
+- [ ] Click upload button: `node scripts/click.js --uid button_upload_xyz`
+- [ ] Wait for completion: `node scripts/wait_for.js --text "Upload successful" --timeout 30000`
+- [ ] Capture confirmation: `node scripts/take_screenshot.js --filePath upload_complete.png`
+
+**Input Example:**
+File path: `/Users/username/documents/report.pdf`
+File input UID: `input_file_abc123`
+
+**Expected Output:**
+File uploaded successfully, confirmation message displayed.
 
 ### Workflow: Drag and Drop Interface
 
-Organize items using drag-and-drop.
+Interact with drag-and-drop components:
 
-**Steps:**
-- [ ] Open page: `node scripts/new_page.js --url <url>`
-- [ ] Get element UIDs: `node scripts/take_snapshot.js`
-- [ ] Identify draggable items and drop zones
-- [ ] Drag item to zone: `node scripts/drag.js --from-uid <item> --to-uid <zone>`
-- [ ] Verify new state: `node scripts/take_snapshot.js`
-- [ ] Repeat for additional items
+- [ ] Open drag interface: `node scripts/new_page.js --url https://example.com/kanban`
+- [ ] Get board structure: `node scripts/take_snapshot.js`
+- [ ] Drag task 1: `node scripts/drag.js --from-uid task_item_1 --to-uid column_in_progress`
+- [ ] Wait for update: `node scripts/wait_for.js --text "Task moved" --timeout 3000`
+- [ ] Drag task 2: `node scripts/drag.js --from-uid task_item_2 --to-uid column_done`
+- [ ] Verify final state: `node scripts/take_snapshot.js`
+- [ ] Save changes: `node scripts/click.js --uid button_save_board`
 
-**Example:**
-```bash
-node scripts/new_page.js --url https://trello-like-app.example.com
-node scripts/take_snapshot.js
-# Output shows: card_1, card_2 in column_todo; column_done is empty
-
-# Move card_1 to done column
-node scripts/drag.js --from-uid card_1 --to-uid column_done
-
-# Verify
-node scripts/take_snapshot.js
-# Now card_1 is in column_done
-```
+**Expected Output:**
+Tasks moved between columns, board state updated and saved.
 
 ### Workflow: Keyboard Navigation
 
-Navigate and interact using only keyboard.
+Use keyboard shortcuts and navigation keys:
 
-**Steps:**
-- [ ] Open page: `node scripts/new_page.js --url <url>`
-- [ ] Tab to first field: `node scripts/press_key.js --key "Tab"`
-- [ ] Fill focused field: `node scripts/fill.js --uid <uid> --value <value>`
-- [ ] Tab to next field: `node scripts/press_key.js --key "Tab"`
-- [ ] Continue tabbing through form
-- [ ] Submit with Enter: `node scripts/press_key.js --key "Enter"`
+- [ ] Open page: `node scripts/new_page.js --url https://example.com/editor`
+- [ ] Focus text area: `node scripts/click.js --uid textarea_editor_abc`
+- [ ] Type content: `node scripts/fill.js --uid textarea_editor_abc --value "Hello world"`
+- [ ] Select all: `node scripts/press_key.js --key "Control+A"`
+- [ ] Copy: `node scripts/press_key.js --key "Control+C"`
+- [ ] Navigate down: `node scripts/press_key.js --key ArrowDown`
+- [ ] Paste: `node scripts/press_key.js --key "Control+V"`
+- [ ] Save: `node scripts/press_key.js --key "Control+S"`
+- [ ] Verify save: `node scripts/wait_for.js --text "Saved" --timeout 5000`
 
-**Example:**
-```bash
-node scripts/new_page.js --url https://example.com/quick-search
-node scripts/take_snapshot.js
+**Expected Output:**
+Keyboard shortcuts execute correctly, content manipulated and saved.
 
-# Focus search box and type
-node scripts/press_key.js --key "/"  # Focus search (keyboard shortcut)
-node scripts/fill.js --uid input_search --value "documentation"
-node scripts/press_key.js --key "Enter"  # Submit search
+### Workflow: Hover Tooltips and Menus
 
-# Navigate results
-node scripts/press_key.js --key "ArrowDown"
-node scripts/press_key.js --key "ArrowDown"
-node scripts/press_key.js --key "Enter"  # Open selected result
-```
+Interact with hover-triggered UI elements:
 
-### Workflow: Dropdown Menu Interaction
+- [ ] Open page: `node scripts/new_page.js --url https://example.com/dashboard`
+- [ ] Get elements: `node scripts/take_snapshot.js`
+- [ ] Hover over help icon: `node scripts/hover.js --uid icon_help_abc`
+- [ ] Wait for tooltip: `node scripts/wait_for.js --text "Click for help" --timeout 2000`
+- [ ] Capture tooltip: `node scripts/take_screenshot.js --filePath tooltip.png`
+- [ ] Hover over menu: `node scripts/hover.js --uid menu_trigger_xyz`
+- [ ] Wait for dropdown: `node scripts/wait_for.js --text "Settings" --timeout 2000`
+- [ ] Click menu item: `node scripts/click.js --uid menu_item_settings`
 
-Interact with hover-based dropdowns.
-
-**Steps:**
-- [ ] Open page: `node scripts/new_page.js --url <url>`
-- [ ] Get element UIDs: `node scripts/take_snapshot.js`
-- [ ] Hover over menu trigger: `node scripts/hover.js --uid <trigger-uid>`
-- [ ] Wait for menu to appear (brief pause)
-- [ ] Take new snapshot: `node scripts/take_snapshot.js`
-- [ ] Click menu item: `node scripts/click.js --uid <menu-item-uid>`
-
-**Example:**
-```bash
-node scripts/new_page.js --url https://example.com
-node scripts/take_snapshot.js
-# Shows: nav_products (menu trigger)
-
-node scripts/hover.js --uid nav_products
-node scripts/wait_for.js --text "All Products"  # Wait for dropdown
-node scripts/take_snapshot.js
-# Now shows dropdown items: link_product_1, link_product_2, etc.
-
-node scripts/click.js --uid link_product_1
-```
+**Expected Output:**
+Tooltips and dropdowns appear on hover, menu items clickable.
 
 ## Common Patterns
 
-### Always Start with Snapshot
-```bash
-# WRONG: Guessing UIDs
-node scripts/click.js --uid button_submit  # Might not exist!
+### Pattern: Always Snapshot Before Interaction
 
-# RIGHT: Get UIDs first
+Get fresh UIDs for every interaction:
+
+```bash
+# 1. Navigate to page
+node scripts/new_page.js --url https://example.com/form
+
+# 2. Wait for page load
+node scripts/wait_for.js --text "Submit" --timeout 5000
+
+# 3. Get current element UIDs
 node scripts/take_snapshot.js
-# Then use actual UIDs from output
-node scripts/click.js --uid button_0
+
+# 4. Use UIDs from snapshot output
+node scripts/fill.js --uid <uid-from-snapshot> --value "data"
 ```
 
-### Handling Dynamic Content
-```bash
-# Take snapshot before and after actions
-node scripts/take_snapshot.js
-node scripts/click.js --uid button_load_more
-node scripts/wait_for.js --text "Loaded"
-node scripts/take_snapshot.js  # Get new UIDs for loaded content
-```
+### Pattern: Form Validation Handling
 
-### Form Filling Strategies
+Handle form validation errors:
 
-**Single fields:**
 ```bash
-node scripts/fill.js --uid input_0 --value "value1"
-node scripts/fill.js --uid input_1 --value "value2"
-```
+# 1. Fill form
+node scripts/fill.js --uid input_email --value "invalid-email"
 
-**Multiple fields (more efficient):**
-```bash
-node scripts/fill_form.js --elements '[
-  {"uid": "input_0", "value": "value1"},
-  {"uid": "input_1", "value": "value2"}
-]'
-```
-
-### Error Recovery
-```bash
-# If form submission fails, take snapshot to see error messages
+# 2. Submit
 node scripts/click.js --uid button_submit
-node scripts/wait_for.js --text "Error"
-node scripts/take_snapshot.js  # See error message and form state
+
+# 3. Check for error message
+node scripts/wait_for.js --text "Invalid email" --timeout 3000
+
+# 4. Correct the input
+node scripts/fill.js --uid input_email --value "valid@example.com"
+
+# 5. Resubmit
+node scripts/click.js --uid button_submit
 ```
+
+### Pattern: Wait After Each Interaction
+
+Ensure UI updates before next action:
+
+```bash
+# 1. Click button
+node scripts/click.js --uid button_load_more
+
+# 2. Wait for new content
+node scripts/wait_for.js --text "Showing 20 items" --timeout 5000
+
+# 3. Now interact with new elements
+node scripts/take_snapshot.js
+```
+
+## Troubleshooting
+
+**Problem:** Element UID not found
+
+**Solution:** UIDs are dynamic. Always take a fresh snapshot before interaction. Don't reuse old UIDs.
+
+**Problem:** Click doesn't trigger action
+
+**Solution:**
+- Ensure element is visible and clickable (not hidden)
+- Try waiting for page to fully load first with `wait_for.js`
+- Check if element requires hover first: use `hover.js` then `click.js`
+
+**Problem:** Fill doesn't work on input
+
+**Solution:**
+- Verify the element is an input/textarea/select
+- For some custom components, use `click.js` to focus, then `press_key.js` to type
+- Check if page has JavaScript that prevents fill
+
+**Problem:** File upload fails
+
+**Solution:**
+- Use absolute file paths (not relative)
+- Verify file exists at the specified path
+- Use forward slashes in paths: `/Users/username/file.pdf`
+
+**Problem:** Drag and drop doesn't work
+
+**Solution:**
+- Ensure both UIDs are valid and current
+- Some drag implementations require specific timing - add `wait_for.js` between actions
+- Verify dropzone accepts the dragged element type

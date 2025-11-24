@@ -1,215 +1,159 @@
 ---
 name: mcp-chrome-devtools
 description: Automate Chrome browser via DevTools Protocol. Navigate pages, interact with elements, inspect network/console, analyze performance, and capture screenshots for web testing and automation tasks.
+server-version: 0.10.2
 ---
 
-# Chrome DevTools Browser Automation
+# Chrome DevTools Skill
 
-Control Chrome browser programmatically using the Chrome DevTools Protocol. This skill enables comprehensive browser automation including page navigation, element interaction, debugging, and performance analysis.
+Control Chrome browser programmatically using the Chrome DevTools Protocol. This skill provides 26 tools for browser automation, web scraping, testing, and performance analysis.
 
 ## Prerequisites
 
-- **Node.js 18+** installed
-- **mcp2rest** running on `http://localhost:28888`
-- **chrome-devtools** server loaded in mcp2rest
-- **Dependencies installed**: Run `npm install` in the `scripts/` directory (already done)
-
-Verify setup:
-```bash
-curl http://localhost:28888/servers | grep chrome-devtools
-```
+- Node.js 18+ installed
+- mcp2rest running on http://localhost:28888
+- chrome-devtools server loaded in mcp2rest
+- Package: `chrome-devtools-mcp@latest`
+- Dependencies installed (already done during generation)
 
 ## Quick Start
 
-Open a page, get its structure, and interact with elements:
+Launch a browser, navigate to a page, and interact with elements:
 
 ```bash
 # 1. Open a new page
-node scripts/new_page.js --url https://github.com/login
+node scripts/new_page.js --url https://example.com
 
-# 2. Get page structure with element UIDs
+# 2. Take a text snapshot to identify elements
 node scripts/take_snapshot.js
 
-# Output shows elements like:
-# TextField "Username or email" [uid: input_0]
-# TextField "Password" [uid: input_1]
-# Button "Sign in" [uid: button_0]
-
-# 3. Fill the login form
-node scripts/fill.js --uid input_0 --value "myusername"
-node scripts/fill.js --uid input_1 --value "mypassword"
-
-# 4. Click sign in
-node scripts/click.js --uid button_0
-
-# 5. Wait for dashboard to load
-node scripts/wait_for.js --text "Dashboard"
+# 3. Click a button (use UID from snapshot output)
+node scripts/click.js --uid button_submit_abc123
 ```
+
+**Expected Output:**
+- Page opens in Chrome browser
+- Snapshot shows page structure with element UIDs
+- Button is clicked and any action triggers
 
 ## Tool Groups
 
-This skill provides **26 tools** organized into **4 groups**:
+This skill provides 26 tools organized into 4 groups:
 
-### 1. Page Management (6 tools)
-Core page lifecycle: create, navigate, switch between, and manage browser pages.
+### 1. Page Management
+Browser window and tab operations: creating pages, navigation, switching contexts.
 
-**See:** [workflows/page-management.md](workflows/page-management.md) for detailed workflows
+**Tools:** new_page, list_pages, close_page, navigate_page, select_page, resize_page
 
-**Quick reference:**
-- `new_page.js` - Create new browser page
-- `list_pages.js` - List all open pages
-- `select_page.js` - Switch to a different page
-- `close_page.js` - Close a page by index
-- `navigate_page.js` - Navigate to URL
-- `resize_page.js` - Set browser window size
+See: @workflows/page-management.md for detailed workflows
 
-### 2. Element Interaction (8 tools)
-Interact with page elements: click, fill forms, drag, upload files, keyboard input.
+### 2. Element Interaction
+User input simulation: clicking, typing, form filling, drag & drop.
 
-**See:** [workflows/element-interaction.md](workflows/element-interaction.md) for detailed workflows
+**Tools:** click, fill, fill_form, hover, drag, upload_file, press_key
 
-**Quick reference:**
-- `take_snapshot.js` - **Start here**: Get page structure with UIDs
-- `click.js` - Click elements
-- `fill.js` - Fill single form field
-- `fill_form.js` - Fill multiple fields at once
-- `hover.js` - Hover over elements
-- `drag.js` - Drag and drop
-- `press_key.js` - Keyboard shortcuts
-- `upload_file.js` - Upload files
+See: @workflows/element-interaction.md for detailed workflows
 
-### 3. Inspection & Debugging (8 tools)
-Debug and monitor: screenshots, console logs, network traffic, JavaScript execution.
+### 3. Inspection & Debugging
+Monitoring and debugging: snapshots, screenshots, console logs, network requests.
 
-**See:** [workflows/inspection-debugging.md](workflows/inspection-debugging.md) for detailed workflows
+**Tools:** take_snapshot, take_screenshot, list_console_messages, get_console_message, list_network_requests, get_network_request
 
-**Quick reference:**
-- `take_screenshot.js` - Capture visual snapshots
-- `list_console_messages.js` - Get console logs
-- `get_console_message.js` - Get specific log
-- `list_network_requests.js` - Monitor network
-- `get_network_request.js` - Get specific request
-- `evaluate_script.js` - Execute JavaScript
-- `handle_dialog.js` - Handle alerts/confirms
-- `wait_for.js` - Wait for text to appear
+See: @workflows/inspection-debugging.md for detailed workflows
 
-### 4. Performance Analysis (4 tools)
-Measure and analyze page performance, Core Web Vitals, network conditions.
+### 4. Performance Analysis
+Scripting and performance tools: JavaScript execution, performance tracing, device emulation.
 
-**See:** [workflows/performance-analysis.md](workflows/performance-analysis.md) for detailed workflows
+**Tools:** evaluate_script, wait_for, handle_dialog, emulate, performance_start_trace, performance_stop_trace, performance_analyze_insight
 
-**Quick reference:**
-- `performance_start_trace.js` - Start recording
-- `performance_stop_trace.js` - Stop recording
-- `performance_analyze_insight.js` - Analyze insights
-- `emulate.js` - Emulate network/CPU throttling
+See: @workflows/performance-analysis.md for detailed workflows
 
 ## Common Workflows
 
-### Workflow 1: Automated Form Submission
+### Workflow: Automated Form Submission
 
-**Use case:** Fill and submit web forms automatically
+Complete end-to-end form filling and submission:
 
-- [ ] Open target page: `node scripts/new_page.js --url <form-url>`
-- [ ] Get element UIDs: `node scripts/take_snapshot.js`
-- [ ] Identify form field UIDs from snapshot output
-- [ ] Fill each field: `node scripts/fill.js --uid <uid> --value <value>`
-- [ ] Submit form: `node scripts/click.js --uid <submit-button-uid>`
-- [ ] Verify success: `node scripts/wait_for.js --text "Success"`
-- [ ] Capture result: `node scripts/take_screenshot.js`
+- [ ] **Open page:** `node scripts/new_page.js --url https://example.com/login`
+- [ ] **Get structure:** `node scripts/take_snapshot.js` (identify UIDs)
+- [ ] **Fill email:** `node scripts/fill.js --uid email_input_xyz --value test@example.com`
+- [ ] **Fill password:** `node scripts/fill.js --uid pass_input_abc --value mypassword`
+- [ ] **Submit form:** `node scripts/click.js --uid submit_btn_def`
+- [ ] **Verify:** `node scripts/wait_for.js --text "Welcome" --timeout 5000`
+- [ ] **Capture result:** `node scripts/take_screenshot.js --format png --filePath result.png`
 
-**Example:**
-```bash
-# Contact form submission
-node scripts/new_page.js --url https://example.com/contact
-node scripts/take_snapshot.js
-# Snapshot shows: input_0 (name), input_1 (email), textarea_0 (message), button_0 (submit)
-node scripts/fill.js --uid input_0 --value "John Doe"
-node scripts/fill.js --uid input_1 --value "john@example.com"
-node scripts/fill.js --uid textarea_0 --value "Hello, I'd like to inquire about..."
-node scripts/click.js --uid button_0
-node scripts/wait_for.js --text "Thank you"
+**Input Example:**
+```
+Email field UID: input_email_1a2b3c
+Password field UID: input_password_4d5e6f
+Submit button UID: button_submit_7g8h9i
 ```
 
-### Workflow 2: Multi-Page Navigation Testing
+**Expected Output:**
+Form submitted successfully, redirected to dashboard, screenshot saved.
 
-**Use case:** Test navigation flows across multiple pages
+### Workflow: Web Scraping with Network Monitoring
 
-- [ ] Open first page: `node scripts/new_page.js --url <url1>`
-- [ ] Open second page in new tab: `node scripts/new_page.js --url <url2>`
-- [ ] List pages: `node scripts/list_pages.js`
-- [ ] Switch to page 0: `node scripts/select_page.js --pageIdx 0`
-- [ ] Interact with page 0: `node scripts/take_snapshot.js`
-- [ ] Switch to page 1: `node scripts/select_page.js --pageIdx 1`
-- [ ] Interact with page 1: `node scripts/take_snapshot.js`
-- [ ] Close page when done: `node scripts/close_page.js --pageIdx 1`
+Capture page data and network activity:
 
-### Workflow 3: Debugging Web Application
+- [ ] **Start monitoring:** `node scripts/new_page.js --url https://example.com/data`
+- [ ] **Wait for load:** `node scripts/wait_for.js --text "Data loaded" --timeout 10000`
+- [ ] **Get page snapshot:** `node scripts/take_snapshot.js --verbose true --filePath snapshot.txt`
+- [ ] **List network calls:** `node scripts/list_network_requests.js --resourceTypes fetch,xhr`
+- [ ] **Get specific request:** `node scripts/get_network_request.js --reqid request_123`
+- [ ] **Extract via script:** `node scripts/evaluate_script.js --function "() => document.querySelector('.data').textContent"`
 
-**Use case:** Inspect console errors and network failures
+**Expected Output:**
+Page data extracted, network requests logged, specific API responses captured.
 
-- [ ] Open application: `node scripts/new_page.js --url <app-url>`
-- [ ] Navigate to problem area: `node scripts/navigate_page.js --url <problem-url>`
-- [ ] Check console messages: `node scripts/list_console_messages.js --types '["error", "warning"]'`
-- [ ] Check failed requests: `node scripts/list_network_requests.js`
-- [ ] Get specific error details: `node scripts/get_console_message.js --msgid <id>`
-- [ ] Capture screenshot: `node scripts/take_screenshot.js --filePath debug.png`
-- [ ] Run diagnostic script: `node scripts/evaluate_script.js --function "() => document.readyState"`
+### Workflow: Performance Testing
 
-### Workflow 4: Performance Testing
+Analyze page performance and Core Web Vitals:
 
-**Use case:** Measure Core Web Vitals and identify bottlenecks
+- [ ] **Open page:** `node scripts/new_page.js --url https://example.com`
+- [ ] **Start tracing:** `node scripts/performance_start_trace.js --reload true --autoStop false`
+- [ ] **Wait for page:** `node scripts/wait_for.js --text "Content loaded" --timeout 15000`
+- [ ] **Stop tracing:** `node scripts/performance_stop_trace.js`
+- [ ] **Review insights:** Check trace output for performance metrics and CWV scores
+- [ ] **Analyze specific insight:** `node scripts/performance_analyze_insight.js --insightSetId set_123 --insightName LargestContentfulPaint`
 
-- [ ] Open page: `node scripts/new_page.js --url <url>`
-- [ ] Start trace with reload: `node scripts/performance_start_trace.js --reload true --autoStop true`
-- [ ] Wait for trace to complete (autoStop handles this)
-- [ ] Review insights in output (CWV scores, performance issues)
-- [ ] Analyze specific insight: `node scripts/performance_analyze_insight.js --insightSetId <id> --insightName <name>`
-- [ ] Test with throttling: `node scripts/emulate.js --networkConditions '{"downloadThroughput": 50000}'`
-- [ ] Run trace again to compare results
+**Expected Output:**
+Performance trace with metrics, CWV scores (LCP, FID, CLS), actionable insights.
+
+### Workflow: Multi-Page Session Management
+
+Work with multiple browser tabs:
+
+- [ ] **List current pages:** `node scripts/list_pages.js`
+- [ ] **Open new tab:** `node scripts/new_page.js --url https://example.com/page1`
+- [ ] **Open another tab:** `node scripts/new_page.js --url https://example.com/page2`
+- [ ] **List all pages:** `node scripts/list_pages.js` (note page indices)
+- [ ] **Switch to page 0:** `node scripts/select_page.js --pageIdx 0`
+- [ ] **Interact with page 0:** `node scripts/take_snapshot.js`
+- [ ] **Switch to page 1:** `node scripts/select_page.js --pageIdx 1`
+- [ ] **Close page 1:** `node scripts/close_page.js --pageIdx 1`
+
+**Expected Output:**
+Multiple tabs managed, context switching works, specific pages closed.
 
 ## State Persistence
 
-**Important:** This server maintains state between tool calls:
+This server maintains state between script calls:
+- Browser instance stays open across multiple commands
+- Page context persists until explicitly changed with `select_page.js`
+- Console messages and network requests accumulate since last navigation
+- State resets when mcp2rest server restarts
 
-- **Current page context**: `select_page.js` changes which page subsequent tools operate on
-- **Page lifecycle**: Opened pages remain open until explicitly closed
-- **Console/Network logs**: Accumulate since last navigation
-- **State persists** until mcp2rest restarts
+## Reference
 
-**Example of state:**
-```bash
-# Page 0 becomes the context
-node scripts/new_page.js --url https://example.com
+- **Complete tool listing:** @reference/all-tools.md
+- **Troubleshooting guide:** @reference/troubleshooting.md
+- **Advanced examples:** @reference/advanced-examples.md
 
-# All subsequent commands operate on page 0
-node scripts/take_snapshot.js  # snapshots page 0
-node scripts/click.js --uid button_0  # clicks on page 0
+## Quick Tips
 
-# Open page 1
-node scripts/new_page.js --url https://another.com
-# Now page 1 is the context
-
-# Switch back to page 0
-node scripts/select_page.js --pageIdx 0
-# Now operating on page 0 again
-```
-
-## Reference Documentation
-
-- **Complete tool listing:** [reference/all-tools.md](reference/all-tools.md)
-- **Troubleshooting guide:** [reference/troubleshooting.md](reference/troubleshooting.md)
-- **Advanced examples:** [reference/advanced-examples.md](reference/advanced-examples.md)
-
-## Getting Help
-
-Each script supports `--help`:
-```bash
-node scripts/<tool-name>.js --help
-```
-
-For connection issues, check mcp2rest status:
-```bash
-curl http://localhost:28888/health
-curl http://localhost:28888/servers
-```
+1. **Always take snapshots first:** Use `take_snapshot.js` to get element UIDs before interaction
+2. **Use wait_for for dynamic content:** Don't assume instant loading
+3. **Handle dialogs proactively:** Use `handle_dialog.js` if alerts/confirms appear
+4. **Check console for errors:** Use `list_console_messages.js` to debug issues
+5. **Monitor network for API calls:** Use `list_network_requests.js` to track backend communication

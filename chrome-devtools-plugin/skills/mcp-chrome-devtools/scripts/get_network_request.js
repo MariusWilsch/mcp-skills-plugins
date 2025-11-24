@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: chrome-devtools
+ * Server Version: 0.10.2
+ * Generated: 2025-11-23
+ * Tool: get_network_request
+ *
  * Gets a network request by an optional reqid, if omitted returns the currently selected request in the DevTools Network panel.
  */
 

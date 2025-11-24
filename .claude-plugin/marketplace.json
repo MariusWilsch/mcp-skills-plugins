@@ -9,12 +9,12 @@
     {
       "name": "chrome-devtools-plugin",
       "source": "./chrome-devtools-plugin",
-      "description": "Browser automation via Chrome DevTools Protocol. Control Chrome programmatically, interact with pages, debug applications, and analyze performance using mcp2rest."
+      "description": "Browser automation and DevTools control. Navigate pages, interact with elements, inspect network/console, analyze performance, and capture screenshots for web testing and automation tasks."
     },
     {
       "name": "figma-desktop-plugin",
       "source": "./figma-desktop-plugin",
-      "description": "Design-to-code automation via Figma Desktop. Extract UI code, design tokens, and screenshots from Figma files using mcp2rest integration."
+      "description": "Extract UI code, design tokens, and screenshots from Figma designs via desktop app. Use when implementing designs, building component libraries, or documenting design systems."
     }
   ]
 }

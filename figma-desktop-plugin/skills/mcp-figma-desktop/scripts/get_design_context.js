@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ * MCP Server: figma-desktop
+ * Server Version: 1.0.0
+ * Generated: 2025-11-23
+ * Tool: get_design_context
+ *
  * Generate UI code for a given node or the currently selected node in the Figma desktop app. Use the nodeId parameter to specify a node id. If no node id is provided, the currently selected node will be used. If a URL is provided, extract the node id from the URL, for example, if given the URL https://figma.com/design/:fileKey/:fileName?node-id=1-2, the extracted nodeId would be `1:2`.
  */
 

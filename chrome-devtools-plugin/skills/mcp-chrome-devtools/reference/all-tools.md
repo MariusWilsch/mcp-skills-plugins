@@ -1,360 +1,772 @@
 # Complete Tool Reference
 
-Alphabetical listing of all 26 tools with parameters and examples.
+Alphabetical listing of all 26 chrome-devtools tools with full parameters and examples.
 
-## click.js
-Click on an element by its UID.
+## Table of Contents
 
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
-- `--dblClick` (optional): Perform double-click (true/false)
+- [click](#click)
+- [close_page](#close_page)
+- [drag](#drag)
+- [emulate](#emulate)
+- [evaluate_script](#evaluate_script)
+- [fill](#fill)
+- [fill_form](#fill_form)
+- [get_console_message](#get_console_message)
+- [get_network_request](#get_network_request)
+- [handle_dialog](#handle_dialog)
+- [hover](#hover)
+- [list_console_messages](#list_console_messages)
+- [list_network_requests](#list_network_requests)
+- [list_pages](#list_pages)
+- [navigate_page](#navigate_page)
+- [new_page](#new_page)
+- [performance_analyze_insight](#performance_analyze_insight)
+- [performance_start_trace](#performance_start_trace)
+- [performance_stop_trace](#performance_stop_trace)
+- [press_key](#press_key)
+- [resize_page](#resize_page)
+- [select_page](#select_page)
+- [take_screenshot](#take_screenshot)
+- [take_snapshot](#take_snapshot)
+- [upload_file](#upload_file)
+- [wait_for](#wait_for)
+
+---
+
+## click
+
+Clicks on an element identified by its UID.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--uid UID` - Element unique identifier from snapshot
+
+**Optional Parameters:**
+- `--dblClick BOOLEAN` - Double click instead of single click (default: false)
 
 **Examples:**
 ```bash
-node scripts/click.js --uid button_0
-node scripts/click.js --uid link_submit --dblClick true
+# Single click
+node scripts/click.js --uid button_submit_abc123
+
+# Double click
+node scripts/click.js --uid file_icon_xyz789 --dblClick true
 ```
 
-## close_page.js
-Close a page by its index. Cannot close the last open page.
+**Related Tools:** hover, fill, take_snapshot
 
-**Parameters:**
-- `--pageIdx` (required): Zero-based page index
+---
 
-**Example:**
-```bash
-node scripts/close_page.js --pageIdx 1
-```
+## close_page
 
-## drag.js
-Drag an element onto another element.
+Closes a page by its index. Cannot close the last remaining page.
 
-**Parameters:**
-- `--from-uid` (required): UID of element to drag
-- `--to-uid` (required): UID of drop target
+**Group:** Page Management
 
-**Example:**
-```bash
-node scripts/drag.js --from-uid item_3 --to-uid dropzone_0
-```
-
-## emulate.js
-Emulate network conditions and CPU throttling.
-
-**Parameters:**
-- `--networkConditions` (optional): Network throttling JSON config
-- `--cpuThrottlingRate` (optional): CPU slowdown multiplier
+**Required Parameters:**
+- `--pageIdx NUMBER` - Index of page to close (from list_pages)
 
 **Examples:**
 ```bash
-node scripts/emulate.js --networkConditions '{"downloadThroughput": 50000, "uploadThroughput": 20000, "latency": 100}'
+node scripts/close_page.js --pageIdx 2
+```
+
+**Notes:** Always keep at least one page open. Close pages from highest to lowest index to avoid index shifting.
+
+**Related Tools:** list_pages, new_page, select_page
+
+---
+
+## drag
+
+Drags one element onto another element.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--from-uid UID` - UID of element to drag
+- `--to-uid UID` - UID of target drop zone
+
+**Examples:**
+```bash
+node scripts/drag.js --from-uid task_item_abc --to-uid dropzone_xyz
+```
+
+**Related Tools:** hover, click, take_snapshot
+
+---
+
+## emulate
+
+Emulates network conditions and CPU throttling.
+
+**Group:** Performance Analysis
+
+**Optional Parameters:**
+- `--networkConditions JSON` - Network throttling config
+- `--cpuThrottlingRate NUMBER` - CPU throttling multiplier (1 = normal)
+
+**Network Conditions Format:**
+```json
+{
+  "downloadThroughput": 50000,
+  "uploadThroughput": 50000,
+  "latency": 2000
+}
+```
+
+**Examples:**
+```bash
+# Slow 3G
+node scripts/emulate.js --networkConditions '{"downloadThroughput":50000,"uploadThroughput":50000,"latency":2000}'
+
+# 4x CPU slowdown
 node scripts/emulate.js --cpuThrottlingRate 4
-node scripts/emulate.js  # Reset all throttling
+
+# Combined
+node scripts/emulate.js --networkConditions '{"downloadThroughput":100000,"uploadThroughput":50000,"latency":100}' --cpuThrottlingRate 2
+
+# Reset to normal
+node scripts/emulate.js --cpuThrottlingRate 1
 ```
 
-## evaluate_script.js
-Execute JavaScript in the page context. Return values must be JSON-serializable.
+**Common Presets:**
+- Slow 3G: 50KB/s down, 50KB/s up, 2000ms latency
+- Fast 3G: 180KB/s down, 84KB/s up, 562ms latency
+- 4G: 1.6MB/s down, 750KB/s up, 150ms latency
 
-**Parameters:**
-- `--function` (required): JavaScript function as string
-- `--args` (optional): Function arguments as JSON array
+**Related Tools:** performance_start_trace, performance_stop_trace
+
+---
+
+## evaluate_script
+
+Executes JavaScript in the page context and returns JSON-serializable results.
+
+**Group:** Performance Analysis
+
+**Required Parameters:**
+- `--function STRING` - JavaScript function as string
+
+**Optional Parameters:**
+- `--args JSON_ARRAY` - Function arguments as JSON array
 
 **Examples:**
 ```bash
+# Simple extraction
 node scripts/evaluate_script.js --function "() => document.title"
-node scripts/evaluate_script.js --function "(selector) => document.querySelector(selector).textContent" --args '["h1"]'
+
+# With parameters
+node scripts/evaluate_script.js --function "(x, y) => x + y" --args '[5, 3]'
+
+# Extract array of data
+node scripts/evaluate_script.js --function "() => Array.from(document.querySelectorAll('h2')).map(h => h.textContent)"
+
+# Complex object extraction
+node scripts/evaluate_script.js --function "() => ({title: document.title, links: document.querySelectorAll('a').length})"
 ```
 
-## fill.js
-Fill a single form field (input, textarea, or select).
+**Important:** Return values must be JSON-serializable (no DOM nodes, functions, or circular references).
 
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
-- `--value` (required): Text to enter or option to select
+**Related Tools:** take_snapshot, wait_for
+
+---
+
+## fill
+
+Types text into inputs/textareas or selects dropdown options.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--uid UID` - Element unique identifier
+- `--value STRING` - Text to type or option to select
 
 **Examples:**
 ```bash
-node scripts/fill.js --uid input_0 --value "user@example.com"
-node scripts/fill.js --uid textarea_msg --value "Multi-line text"
+# Text input
+node scripts/fill.js --uid input_username_abc --value "john.doe"
+
+# Textarea
+node scripts/fill.js --uid textarea_comment_def --value "This is a long comment"
+
+# Dropdown select
+node scripts/fill.js --uid select_country_ghi --value "United States"
 ```
 
-## fill_form.js
-Fill multiple form fields at once.
+**Related Tools:** fill_form, click, take_snapshot
 
-**Parameters:**
-- `--elements` (required): JSON array of `{uid, value}` objects
+---
 
-**Example:**
-```bash
-node scripts/fill_form.js --elements '[{"uid": "input_0", "value": "John"}, {"uid": "input_1", "value": "Doe"}]'
+## fill_form
+
+Fills multiple form fields at once.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--elements JSON_ARRAY` - Array of {uid, value} objects
+
+**Format:**
+```json
+[
+  {"uid": "input_email", "value": "test@example.com"},
+  {"uid": "input_password", "value": "secret123"}
+]
 ```
-
-## get_console_message.js
-Get detailed information about a specific console message.
-
-**Parameters:**
-- `--msgid` (required): Message ID from list_console_messages
-
-**Example:**
-```bash
-node scripts/get_console_message.js --msgid msg_0
-```
-
-## get_network_request.js
-Get detailed information about a network request.
-
-**Parameters:**
-- `--reqid` (optional): Request ID from list_network_requests. If omitted, returns currently selected request.
-
-**Example:**
-```bash
-node scripts/get_network_request.js --reqid req_0
-node scripts/get_network_request.js  # Get currently selected request
-```
-
-## handle_dialog.js
-Handle browser dialogs (alert, confirm, prompt).
-
-**Parameters:**
-- `--action` (required): "accept" or "dismiss"
-- `--promptText` (optional): Text for prompt dialogs
 
 **Examples:**
 ```bash
+node scripts/fill_form.js --elements '[{"uid":"input_email","value":"test@example.com"},{"uid":"input_password","value":"secret123"}]'
+
+# Multi-line for readability (bash)
+node scripts/fill_form.js --elements '[
+  {"uid":"input_name","value":"John Doe"},
+  {"uid":"input_email","value":"john@example.com"},
+  {"uid":"select_country","value":"USA"}
+]'
+```
+
+**Related Tools:** fill, click, take_snapshot
+
+---
+
+## get_console_message
+
+Retrieves a specific console message by ID.
+
+**Group:** Inspection & Debugging
+
+**Required Parameters:**
+- `--msgid STRING` - Message ID from list_console_messages
+
+**Examples:**
+```bash
+node scripts/get_console_message.js --msgid msg_abc123
+```
+
+**Related Tools:** list_console_messages
+
+---
+
+## get_network_request
+
+Gets details of a specific network request.
+
+**Group:** Inspection & Debugging
+
+**Optional Parameters:**
+- `--reqid STRING` - Request ID from list_network_requests (if omitted, returns currently selected request in DevTools)
+
+**Examples:**
+```bash
+# Specific request
+node scripts/get_network_request.js --reqid req_abc123
+
+# Currently selected in DevTools
+node scripts/get_network_request.js
+```
+
+**Output includes:** URL, method, status code, headers, request/response body, timing.
+
+**Related Tools:** list_network_requests
+
+---
+
+## handle_dialog
+
+Handles browser dialogs (alert, confirm, prompt).
+
+**Group:** Performance Analysis
+
+**Required Parameters:**
+- `--action STRING` - Either "accept" or "dismiss"
+
+**Optional Parameters:**
+- `--promptText STRING` - Text to enter in prompt dialog (only for prompts)
+
+**Examples:**
+```bash
+# Accept alert
 node scripts/handle_dialog.js --action accept
-node scripts/handle_dialog.js --action accept --promptText "My answer"
+
+# Dismiss confirm
+node scripts/handle_dialog.js --action dismiss
+
+# Accept prompt with input
+node scripts/handle_dialog.js --action accept --promptText "My Answer"
 ```
 
-## hover.js
-Hover over an element.
+**Notes:** Dialog must already be open when calling this tool.
 
-**Parameters:**
-- `--uid` (required): Element UID from snapshot
+**Related Tools:** click, wait_for
 
-**Example:**
-```bash
-node scripts/hover.js --uid button_info
-```
+---
 
-## list_console_messages.js
-List console messages from the page.
+## hover
 
-**Parameters:**
-- `--pageSize` (optional): Messages per page
-- `--pageIdx` (optional): Page number
-- `--types` (optional): Filter by type: `["log", "error", "warning", "info"]`
-- `--includePreservedMessages` (optional): Include messages from before navigation
+Hovers the mouse over an element.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--uid UID` - Element unique identifier
 
 **Examples:**
 ```bash
+node scripts/hover.js --uid tooltip_trigger_abc
+
+# Common pattern: hover then click
+node scripts/hover.js --uid menu_trigger_xyz
+node scripts/click.js --uid menu_item_settings
+```
+
+**Use Cases:** Triggering tooltips, dropdown menus, hover effects.
+
+**Related Tools:** click, take_snapshot
+
+---
+
+## list_console_messages
+
+Lists console messages (logs, warnings, errors) from the current page.
+
+**Group:** Inspection & Debugging
+
+**Optional Parameters:**
+- `--pageSize NUMBER` - Number of messages per page
+- `--pageIdx NUMBER` - Page index for pagination (0-based)
+- `--types STRING` - Comma-separated types: log,warn,error,info
+- `--includePreservedMessages BOOLEAN` - Include messages from before current navigation
+
+**Examples:**
+```bash
+# All messages
 node scripts/list_console_messages.js
-node scripts/list_console_messages.js --types '["error", "warning"]'
+
+# Only errors
+node scripts/list_console_messages.js --types error
+
+# Errors and warnings
+node scripts/list_console_messages.js --types error,warn
+
+# Paginated
+node scripts/list_console_messages.js --pageSize 10 --pageIdx 0
 ```
 
-## list_network_requests.js
-List network requests made by the page.
+**Related Tools:** get_console_message
 
-**Parameters:**
-- `--pageSize` (optional): Requests per page
-- `--pageIdx` (optional): Page number
-- `--resourceTypes` (optional): Filter by type: `["document", "xhr", "fetch", "script", "stylesheet", "image"]`
-- `--includePreservedRequests` (optional): Include requests from before navigation
+---
+
+## list_network_requests
+
+Lists network requests made by the current page.
+
+**Group:** Inspection & Debugging
+
+**Optional Parameters:**
+- `--pageSize NUMBER` - Number of requests per page
+- `--pageIdx NUMBER` - Page index for pagination (0-based)
+- `--resourceTypes STRING` - Comma-separated types: fetch,xhr,document,script,stylesheet,image
+- `--includePreservedRequests BOOLEAN` - Include requests from before current navigation
 
 **Examples:**
 ```bash
+# All requests
 node scripts/list_network_requests.js
-node scripts/list_network_requests.js --resourceTypes '["xhr", "fetch"]'
+
+# Only API calls
+node scripts/list_network_requests.js --resourceTypes fetch,xhr
+
+# Only scripts and stylesheets
+node scripts/list_network_requests.js --resourceTypes script,stylesheet
+
+# Paginated
+node scripts/list_network_requests.js --pageSize 20 --pageIdx 0
 ```
 
-## list_pages.js
-List all currently open pages with their indices.
+**Related Tools:** get_network_request
 
-**Usage:**
+---
+
+## list_pages
+
+Lists all open browser pages with their indices and URLs.
+
+**Group:** Page Management
+
+**No Parameters**
+
+**Examples:**
 ```bash
 node scripts/list_pages.js
 ```
 
-**Output example:**
+**Output Example:**
 ```
 Page 0: https://example.com (selected)
-Page 1: https://github.com
+Page 1: https://google.com
+Page 2: https://github.com
 ```
 
-## navigate_page.js
-Navigate the currently selected page to a URL.
+**Related Tools:** new_page, select_page, close_page
 
-**Parameters:**
-- `--url` (optional): URL to navigate to
-- `--type` (optional): Navigation type (e.g., "reload")
-- `--ignoreCache` (optional): Ignore cache (true/false)
-- `--timeout` (optional): Navigation timeout in milliseconds
+---
+
+## navigate_page
+
+Navigates the currently selected page.
+
+**Group:** Page Management
+
+**Optional Parameters:**
+- `--url STRING` - URL to navigate to
+- `--type STRING` - Navigation type: navigate, reload, back, forward
+- `--ignoreCache BOOLEAN` - Bypass cache on reload
+- `--timeout NUMBER` - Navigation timeout in milliseconds
 
 **Examples:**
 ```bash
-node scripts/navigate_page.js --url https://example.com
+# Navigate to URL
+node scripts/navigate_page.js --url https://example.com/page2
+
+# Reload page
 node scripts/navigate_page.js --type reload
+
+# Reload ignoring cache
+node scripts/navigate_page.js --type reload --ignoreCache true
+
+# Go back
+node scripts/navigate_page.js --type back
+
+# Go forward
+node scripts/navigate_page.js --type forward
 ```
 
-## new_page.js
-Create a new browser page.
+**Related Tools:** new_page, wait_for
 
-**Parameters:**
-- `--url` (required): URL to navigate to
-- `--timeout` (optional): Navigation timeout in milliseconds
+---
+
+## new_page
+
+Creates a new browser page (tab).
+
+**Group:** Page Management
+
+**Required Parameters:**
+- `--url STRING` - URL to open
+
+**Optional Parameters:**
+- `--timeout NUMBER` - Page load timeout in milliseconds (default: 30000)
 
 **Examples:**
 ```bash
-node scripts/new_page.js --url https://github.com
-node scripts/new_page.js --url https://example.com --timeout 30000
+node scripts/new_page.js --url https://example.com
+
+# With longer timeout
+node scripts/new_page.js --url https://slow-site.com --timeout 60000
 ```
 
-## performance_analyze_insight.js
-Get detailed information about a specific performance insight.
+**Notes:** New page becomes the selected page automatically.
 
-**Parameters:**
-- `--insightSetId` (required): Insight set ID from trace results
-- `--insightName` (required): Name of specific insight
+**Related Tools:** list_pages, select_page, close_page
 
-**Example:**
-```bash
-node scripts/performance_analyze_insight.js --insightSetId set_0 --insightName "LargestContentfulPaint"
-```
+---
 
-**Common insight names:**
-- `LargestContentfulPaint`
-- `CumulativeLayoutShift`
-- `InteractionToNextPaint`
-- `RenderBlocking`
-- `ThirdParties`
+## performance_analyze_insight
 
-## performance_start_trace.js
-Start performance trace recording.
+Gets detailed information about a specific performance insight.
 
-**Parameters:**
-- `--reload` (required): Reload page before tracing (true/false)
-- `--autoStop` (required): Auto-stop when load completes (true/false)
+**Group:** Performance Analysis
+
+**Required Parameters:**
+- `--insightSetId STRING` - Insight set ID from performance trace
+- `--insightName STRING` - Name of specific insight to analyze
 
 **Examples:**
 ```bash
-node scripts/performance_start_trace.js --reload true --autoStop true
-node scripts/performance_start_trace.js --reload false --autoStop false
+node scripts/performance_analyze_insight.js --insightSetId set_abc123 --insightName LargestContentfulPaint
+
+node scripts/performance_analyze_insight.js --insightSetId set_abc123 --insightName CumulativeLayoutShift
 ```
 
-## performance_stop_trace.js
-Stop active performance trace recording.
+**Common Insight Names:**
+- LargestContentfulPaint
+- FirstContentfulPaint
+- CumulativeLayoutShift
+- TotalBlockingTime
+- TimeToInteractive
 
-**Usage:**
+**Related Tools:** performance_start_trace, performance_stop_trace
+
+---
+
+## performance_start_trace
+
+Starts performance trace recording.
+
+**Group:** Performance Analysis
+
+**Required Parameters:**
+- `--reload BOOLEAN` - Reload page before tracing
+- `--autoStop BOOLEAN` - Automatically stop when page loads
+
+**Examples:**
+```bash
+# Start with page reload
+node scripts/performance_start_trace.js --reload true --autoStop false
+
+# Start without reload
+node scripts/performance_start_trace.js --reload false --autoStop true
+```
+
+**Notes:** Only one trace can be active at a time. Call performance_stop_trace to get results.
+
+**Related Tools:** performance_stop_trace, performance_analyze_insight
+
+---
+
+## performance_stop_trace
+
+Stops the active performance trace and returns results.
+
+**Group:** Performance Analysis
+
+**No Parameters**
+
+**Examples:**
 ```bash
 node scripts/performance_stop_trace.js
 ```
 
-## press_key.js
-Press keyboard keys or key combinations.
+**Output includes:**
+- Core Web Vitals scores (LCP, FID, CLS)
+- Performance insights
+- Insight set IDs for detailed analysis
+- Timing metrics
 
-**Parameters:**
-- `--key` (required): Key name or combination
+**Related Tools:** performance_start_trace, performance_analyze_insight
+
+---
+
+## press_key
+
+Presses a key or key combination.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--key STRING` - Key or key combination to press
 
 **Examples:**
 ```bash
-node scripts/press_key.js --key "Enter"
-node scripts/press_key.js --key "Tab"
-node scripts/press_key.js --key "Control+A"
-node scripts/press_key.js --key "Meta+S"
+# Single key
+node scripts/press_key.js --key Enter
+node scripts/press_key.js --key Tab
+node scripts/press_key.js --key Escape
+
+# Arrow keys
+node scripts/press_key.js --key ArrowDown
+node scripts/press_key.js --key ArrowUp
+
+# Key combinations (use + separator)
+node scripts/press_key.js --key "Control+S"
+node scripts/press_key.js --key "Control+Shift+P"
+node scripts/press_key.js --key "Alt+F4"
 ```
 
-**Common keys:**
-- Enter, Tab, Escape, Space
-- ArrowUp, ArrowDown, ArrowLeft, ArrowRight
-- Control+<key>, Meta+<key>, Alt+<key>, Shift+<key>
+**Common Keys:** Enter, Tab, Escape, Space, Backspace, Delete, ArrowUp, ArrowDown, ArrowLeft, ArrowRight
 
-## resize_page.js
-Resize the browser window.
+**Modifiers:** Control, Shift, Alt, Meta (Command on Mac)
 
-**Parameters:**
-- `--width` (required): Window width in pixels
-- `--height` (required): Window height in pixels
+**Related Tools:** fill, click
+
+---
+
+## resize_page
+
+Resizes the browser window to specific dimensions.
+
+**Group:** Page Management
+
+**Required Parameters:**
+- `--width NUMBER` - Width in pixels
+- `--height NUMBER` - Height in pixels
 
 **Examples:**
 ```bash
+# Desktop
 node scripts/resize_page.js --width 1920 --height 1080
-node scripts/resize_page.js --width 375 --height 667  # iPhone SE
+
+# Laptop
+node scripts/resize_page.js --width 1366 --height 768
+
+# Tablet
+node scripts/resize_page.js --width 768 --height 1024
+
+# Mobile
+node scripts/resize_page.js --width 375 --height 667
 ```
 
-**Common viewport sizes:**
-- Desktop: 1920×1080, 1366×768
-- Tablet: 768×1024 (iPad), 800×1280
-- Mobile: 375×667 (iPhone SE), 414×896 (iPhone XR)
+**Common Dimensions:**
+- Desktop: 1920x1080, 1440x900, 1366x768
+- Tablet: 768x1024 (iPad), 600x960
+- Mobile: 375x667 (iPhone), 360x640 (Android)
 
-## select_page.js
-Switch context to a different page.
+**Related Tools:** take_screenshot, emulate
 
-**Parameters:**
-- `--pageIdx` (required): Zero-based page index
+---
 
-**Example:**
+## select_page
+
+Switches the active context to a specific page.
+
+**Group:** Page Management
+
+**Required Parameters:**
+- `--pageIdx NUMBER` - Page index from list_pages
+
+**Examples:**
 ```bash
 node scripts/select_page.js --pageIdx 0
+node scripts/select_page.js --pageIdx 2
 ```
 
-## take_screenshot.js
-Capture visual snapshots of page or elements.
+**Notes:** All subsequent commands operate on the selected page.
 
-**Parameters:**
-- `--format` (optional): Image format (png, jpeg, webp)
-- `--quality` (optional): JPEG/WebP quality 0-100
-- `--uid` (optional): Capture specific element only
-- `--fullPage` (optional): Capture full scrollable page
-- `--filePath` (optional): Save to specific path
+**Related Tools:** list_pages, new_page
+
+---
+
+## take_screenshot
+
+Captures a visual screenshot of the page or element.
+
+**Group:** Inspection & Debugging
+
+**Optional Parameters:**
+- `--format STRING` - Image format: png or jpeg (default: png)
+- `--quality NUMBER` - JPEG quality 0-100 (default: 90)
+- `--uid STRING` - Element UID to screenshot (if omitted, screenshots viewport)
+- `--fullPage BOOLEAN` - Capture full scrollable page (default: false)
+- `--filePath STRING` - Path to save image file
 
 **Examples:**
 ```bash
-node scripts/take_screenshot.js --format png --fullPage true
-node scripts/take_screenshot.js --uid header_0 --filePath header.png
-node scripts/take_screenshot.js --format jpeg --quality 95
+# Full page PNG
+node scripts/take_screenshot.js --fullPage true --filePath page.png
+
+# Viewport only
+node scripts/take_screenshot.js --filePath viewport.png
+
+# Specific element
+node scripts/take_screenshot.js --uid element_abc123 --filePath element.png
+
+# Compressed JPEG
+node scripts/take_screenshot.js --format jpeg --quality 80 --filePath page.jpg
 ```
 
-## take_snapshot.js
-Get text snapshot of page with element UIDs. **Always use this before interacting with elements.**
+**Related Tools:** take_snapshot
 
-**Parameters:**
-- `--verbose` (optional): Include more details
-- `--filePath` (optional): Save snapshot to file
+---
+
+## take_snapshot
+
+Captures text-based page structure with element UIDs.
+
+**Group:** Inspection & Debugging
+
+**Optional Parameters:**
+- `--verbose BOOLEAN` - Include more details (default: false)
+- `--filePath STRING` - Path to save snapshot file
 
 **Examples:**
 ```bash
+# Console output
 node scripts/take_snapshot.js
-node scripts/take_snapshot.js --verbose true --filePath snapshot.txt
+
+# Verbose mode
+node scripts/take_snapshot.js --verbose true
+
+# Save to file
+node scripts/take_snapshot.js --filePath snapshot.txt
+
+# Both
+node scripts/take_snapshot.js --verbose true --filePath detailed_snapshot.txt
 ```
 
-## upload_file.js
-Upload a file through a file input element.
+**Output Format:**
+```
+Page: https://example.com
+Title: Example Domain
 
-**Parameters:**
-- `--uid` (required): UID of file input element
-- `--filePath` (required): Absolute path to file
-
-**Example:**
-```bash
-node scripts/upload_file.js --uid input_file_0 --filePath /Users/me/documents/resume.pdf
+button "Submit" [uid: button_submit_abc123]
+input "Email" [uid: input_email_def456]
+link "About" [uid: link_about_ghi789]
 ```
 
-**Important:** File path must be absolute.
+**Important:** Always use UIDs from the most recent snapshot. UIDs regenerate on each snapshot.
 
-## wait_for.js
-Wait for specific text to appear on the page.
+**Related Tools:** click, fill, hover, drag, take_screenshot
 
-**Parameters:**
-- `--text` (required): Text to wait for
-- `--timeout` (optional): Maximum wait time in milliseconds
+---
+
+## upload_file
+
+Uploads a file through a file input element.
+
+**Group:** Element Interaction
+
+**Required Parameters:**
+- `--uid UID` - File input element UID
+- `--filePath STRING` - Absolute path to file to upload
 
 **Examples:**
 ```bash
-node scripts/wait_for.js --text "Loading complete"
-node scripts/wait_for.js --text "Error" --timeout 5000
+# Upload document
+node scripts/upload_file.js --uid input_file_abc --filePath /Users/username/documents/resume.pdf
+
+# Upload image
+node scripts/upload_file.js --uid input_avatar_xyz --filePath /Users/username/pictures/profile.jpg
 ```
 
-**Use cases:**
-- Wait for page loads
-- Wait for AJAX content
-- Verify form submissions
-- Detect error messages
+**Notes:**
+- Use absolute paths (not relative)
+- Use forward slashes in paths
+- Verify file exists before upload
+
+**Related Tools:** click, fill, wait_for
+
+---
+
+## wait_for
+
+Waits for specific text to appear on the page.
+
+**Group:** Performance Analysis
+
+**Required Parameters:**
+- `--text STRING` - Text to wait for (exact match)
+
+**Optional Parameters:**
+- `--timeout NUMBER` - Maximum wait time in milliseconds (default: 30000)
+
+**Examples:**
+```bash
+# Wait up to 30 seconds (default)
+node scripts/wait_for.js --text "Loading complete"
+
+# Wait up to 10 seconds
+node scripts/wait_for.js --text "Welcome" --timeout 10000
+
+# Wait for error message
+node scripts/wait_for.js --text "Error occurred" --timeout 5000
+```
+
+**Notes:**
+- Text match is exact (case-sensitive)
+- Times out if text doesn't appear within timeout period
+- Use after navigation, clicks, or any action that triggers loading
+
+**Related Tools:** click, navigate_page, take_snapshot

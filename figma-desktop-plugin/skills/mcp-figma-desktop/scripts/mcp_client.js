@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 /**
+ * MCP REST Client for figma-desktop
+ * Server Version: 1.0.0
+ * Generated: 2025-11-23
+ *
  * Shared MCP REST client for tool scripts.
  */
 
