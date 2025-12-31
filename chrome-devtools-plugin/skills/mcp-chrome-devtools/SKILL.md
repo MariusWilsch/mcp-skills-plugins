@@ -24,8 +24,8 @@ Launch a browser, navigate to a page, and interact with elements:
 # 1. Open a new page
 node scripts/new_page.js --url https://example.com
 
-# 2. Take a text snapshot to identify elements
-node scripts/take_snapshot.js
+# 2. Take a FILTERED snapshot (specify what you're looking for)
+node scripts/take_snapshot.js --context "find submit button"
 
 # 3. Click a button (use UID from snapshot output)
 node scripts/click.js --uid button_submit_abc123
@@ -33,8 +33,32 @@ node scripts/click.js --uid button_submit_abc123
 
 **Expected Output:**
 - Page opens in Chrome browser
-- Snapshot shows page structure with element UIDs
+- Snapshot shows ONLY matching elements (90% context reduction)
 - Button is clicked and any action triggers
+
+## Best Practices
+
+### Always use --context for verbose tools
+
+The `--context` flag uses LLM filtering to return only relevant elements, reducing context usage by ~90%:
+
+```bash
+# Filtered (recommended) - returns only matching UIDs
+node scripts/take_snapshot.js --context "find login button"
+
+# Full output (escape hatch) - returns everything
+node scripts/take_snapshot.js --context "*"
+```
+
+**Tools supporting --context:**
+- `take_snapshot.js` - Filter accessibility tree elements
+- `list_console_messages.js` - Filter console output (coming soon)
+- `list_network_requests.js` - Filter network requests (coming soon)
+
+**Why this matters:**
+- Full snapshots: ~8,500 tokens (~$0.13 context cost)
+- Filtered snapshots: ~500 tokens (~$0.01 context cost)
+- ROI: ~25x per call
 
 ## Tool Groups
 
@@ -75,7 +99,7 @@ See: @workflows/performance-analysis.md for detailed workflows
 Complete end-to-end form filling and submission:
 
 - [ ] **Open page:** `node scripts/new_page.js --url https://example.com/login`
-- [ ] **Get structure:** `node scripts/take_snapshot.js` (identify UIDs)
+- [ ] **Get form elements:** `node scripts/take_snapshot.js --context "find email and password inputs"`
 - [ ] **Fill email:** `node scripts/fill.js --uid email_input_xyz --value test@example.com`
 - [ ] **Fill password:** `node scripts/fill.js --uid pass_input_abc --value mypassword`
 - [ ] **Submit form:** `node scripts/click.js --uid submit_btn_def`
@@ -152,8 +176,9 @@ This server maintains state between script calls:
 
 ## Quick Tips
 
-1. **Always take snapshots first:** Use `take_snapshot.js` to get element UIDs before interaction
+1. **Always use --context for snapshots:** Specify what you're looking for to reduce context by 90%
 2. **Use wait_for for dynamic content:** Don't assume instant loading
 3. **Handle dialogs proactively:** Use `handle_dialog.js` if alerts/confirms appear
 4. **Check console for errors:** Use `list_console_messages.js` to debug issues
 5. **Monitor network for API calls:** Use `list_network_requests.js` to track backend communication
+6. **Use --context "*" as escape hatch:** When you need full unfiltered output

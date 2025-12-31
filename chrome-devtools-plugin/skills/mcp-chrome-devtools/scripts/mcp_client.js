@@ -3,11 +3,14 @@
  * MCP REST Client for chrome-devtools
  * Server Version: 0.10.2
  * Generated: 2025-11-23
+ * Modified: 2025-12-31
  *
  * Shared MCP REST client for tool scripts.
+ * Includes LLM filtering via callToolFiltered() for context-aware output reduction.
  */
 
 import axios from 'axios';
+import { filterSnapshot } from './llm_filter.js';
 
 // MCP2REST endpoint (configurable via environment variable)
 const MCP_REST_URL = process.env.MCP_REST_URL || 'http://localhost:28888';
@@ -76,4 +79,35 @@ export async function callTool(server, tool, args) {
     }
     process.exit(1);
   }
+}
+
+/**
+ * Call an MCP tool with LLM-based context filtering.
+ *
+ * Reduces output to only elements matching the context query.
+ * Use context="*" to get full unfiltered output (escape hatch).
+ *
+ * @param {string} server - Server name (e.g., "chrome-devtools")
+ * @param {string} tool - Tool name (e.g., "take_snapshot")
+ * @param {object} args - Tool arguments as object
+ * @param {string} context - What to look for (e.g., "find login button") or "*" for full output
+ * @returns {Promise<{result: string, uids: string[], fallback: boolean}>} Filtered result with metadata
+ */
+export async function callToolFiltered(server, tool, args, context) {
+  const result = await callTool(server, tool, args);
+
+  // Escape hatch: return full output
+  if (!context || context === '*') {
+    return { result, uids: [], fallback: false, full: true };
+  }
+
+  // Apply LLM filtering
+  const { filtered, uids, fallback } = await filterSnapshot(result, context);
+
+  return {
+    result: fallback ? result : filtered,
+    uids,
+    fallback,
+    full: fallback
+  };
 }
