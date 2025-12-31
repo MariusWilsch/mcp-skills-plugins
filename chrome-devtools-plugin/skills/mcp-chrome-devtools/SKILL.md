@@ -51,9 +51,9 @@ node scripts/take_snapshot.js --context "*"
 ```
 
 **Tools supporting --context:**
-- `take_snapshot.js` - Filter accessibility tree elements
-- `list_console_messages.js` - Filter console output (coming soon)
-- `list_network_requests.js` - Filter network requests (coming soon)
+- `take_snapshot.js` - Filter accessibility tree elements by UID
+- `list_console_messages.js` - Filter console messages by msgid
+- `list_network_requests.js` - Filter network requests by reqid
 
 **Why this matters:**
 - Full snapshots: ~8,500 tokens (~$0.13 context cost)
@@ -122,8 +122,8 @@ Capture page data and network activity:
 
 - [ ] **Start monitoring:** `node scripts/new_page.js --url https://example.com/data`
 - [ ] **Wait for load:** `node scripts/wait_for.js --text "Data loaded" --timeout 10000`
-- [ ] **Get page snapshot:** `node scripts/take_snapshot.js --verbose true --filePath snapshot.txt`
-- [ ] **List network calls:** `node scripts/list_network_requests.js --resourceTypes fetch,xhr`
+- [ ] **Get page snapshot:** `node scripts/take_snapshot.js --context "*" --verbose true --filePath snapshot.txt`
+- [ ] **List network calls:** `node scripts/list_network_requests.js --context "API calls" --resourceTypes fetch,xhr`
 - [ ] **Get specific request:** `node scripts/get_network_request.js --reqid request_123`
 - [ ] **Extract via script:** `node scripts/evaluate_script.js --function "() => document.querySelector('.data').textContent"`
 
@@ -153,7 +153,7 @@ Work with multiple browser tabs:
 - [ ] **Open another tab:** `node scripts/new_page.js --url https://example.com/page2`
 - [ ] **List all pages:** `node scripts/list_pages.js` (note page indices)
 - [ ] **Switch to page 0:** `node scripts/select_page.js --pageIdx 0`
-- [ ] **Interact with page 0:** `node scripts/take_snapshot.js`
+- [ ] **Interact with page 0:** `node scripts/take_snapshot.js --context "main content"`
 - [ ] **Switch to page 1:** `node scripts/select_page.js --pageIdx 1`
 - [ ] **Close page 1:** `node scripts/close_page.js --pageIdx 1`
 

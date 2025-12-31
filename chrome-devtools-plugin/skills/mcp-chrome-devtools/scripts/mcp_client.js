@@ -10,7 +10,7 @@
  */
 
 import axios from 'axios';
-import { filterSnapshot } from './llm_filter.js';
+import { filterSnapshot, filterOutput } from './llm_filter.js';
 
 // MCP2REST endpoint (configurable via environment variable)
 const MCP_REST_URL = process.env.MCP_REST_URL || 'http://localhost:28888';
@@ -91,22 +91,24 @@ export async function callTool(server, tool, args) {
  * @param {string} tool - Tool name (e.g., "take_snapshot")
  * @param {object} args - Tool arguments as object
  * @param {string} context - What to look for (e.g., "find login button") or "*" for full output
- * @returns {Promise<{result: string, uids: string[], fallback: boolean}>} Filtered result with metadata
+ * @param {string} domain - Filter domain: 'snapshot', 'console', or 'network' (default: 'snapshot')
+ * @returns {Promise<{result: string, ids: string[], fallback: boolean, full: boolean}>} Filtered result with metadata
  */
-export async function callToolFiltered(server, tool, args, context) {
+export async function callToolFiltered(server, tool, args, context, domain = 'snapshot') {
   const result = await callTool(server, tool, args);
 
   // Escape hatch: return full output
   if (!context || context === '*') {
-    return { result, uids: [], fallback: false, full: true };
+    return { result, ids: [], uids: [], fallback: false, full: true };
   }
 
-  // Apply LLM filtering
-  const { filtered, uids, fallback } = await filterSnapshot(result, context);
+  // Apply LLM filtering with domain-specific prompt
+  const { filtered, ids, fallback } = await filterOutput(result, context, domain);
 
   return {
     result: fallback ? result : filtered,
-    uids,
+    ids,
+    uids: ids,  // Legacy alias for backward compatibility
     fallback,
     full: fallback
   };
