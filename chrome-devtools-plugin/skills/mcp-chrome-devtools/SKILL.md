@@ -51,9 +51,19 @@ node scripts/take_snapshot.js --context "*"
 ```
 
 **Tools supporting --context:**
+
+*Verbose output tools (required):*
 - `take_snapshot.js` - Filter accessibility tree elements by UID
 - `list_console_messages.js` - Filter console messages by msgid
 - `list_network_requests.js` - Filter network requests by reqid
+
+*Interaction tools (optional):*
+- `click.js` - Filter post-click snapshot
+- `fill.js` - Filter post-fill snapshot
+- `fill_form.js` - Filter post-form snapshot
+- `hover.js` - Filter post-hover snapshot
+- `drag.js` - Filter post-drag snapshot
+- `press_key.js` - Filter post-keypress snapshot
 
 **Why this matters:**
 - Full snapshots: ~8,500 tokens (~$0.13 context cost)
