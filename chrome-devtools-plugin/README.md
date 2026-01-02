@@ -23,6 +23,18 @@ This plugin provides comprehensive browser automation capabilities through the c
 - **Node.js** >= 18.0.0
 - **Chrome/Chromium** browser installed
 
+### Optional: LLM Output Filtering
+
+For optimized context usage (~90% reduction), add an OpenRouter API key:
+
+1. Get a key from [openrouter.ai](https://openrouter.ai)
+2. Add to `~/.claude/.env`:
+   ```
+   OPENROUTER_API_KEY=your_key_here
+   ```
+
+**Without the key:** Plugin works normally but returns full verbose output instead of filtered results. Cost savings: ~$0.13/call when filtering is active.
+
 The plugin automatically configures the chrome-devtools MCP server when installed.
 
 ## Installation
