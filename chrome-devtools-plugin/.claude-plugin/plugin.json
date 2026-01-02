@@ -1,7 +1,7 @@
 {
   "name": "chrome-devtools-plugin",
   "description": "Browser automation and DevTools control. Navigate pages, interact with elements, inspect network/console, analyze performance, and capture screenshots for web testing and automation tasks.",
-  "version": "0.5.1",
+  "version": "2026-01-02-11-25",
   "author": {
     "name": "ulasbilgen"
   }
