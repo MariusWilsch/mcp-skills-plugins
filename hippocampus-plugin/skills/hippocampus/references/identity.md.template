@@ -1,0 +1,26 @@
+# Identity Context
+
+Reference for documents requiring author/company identity.
+
+## User Identity
+
+| Field | Value |
+|-------|-------|
+| Name | [Your Name] |
+| Company | [Your Company] |
+| Activity | [Your Business Activity] |
+
+## Addresses
+
+### Personal
+[Your Street Address]
+[City, Postal Code]
+[Country]
+Phone: [Your Phone]
+
+### Company (if applicable)
+[Company Name]
+[Company Address]
+[City, Postal Code]
+[Country]
+VAT ID: [If applicable]

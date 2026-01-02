@@ -15,6 +15,11 @@
       "name": "figma-desktop-plugin",
       "source": "./figma-desktop-plugin",
       "description": "Extract UI code, design tokens, and screenshots from Figma designs via desktop app. Use when implementing designs, building component libraries, or documenting design systems."
+    },
+    {
+      "name": "hippocampus-plugin",
+      "source": "./hippocampus-plugin",
+      "description": "Personal knowledge base for cross-project documentation, conventions, patterns, and how-to guides. Organizes markdown files by tier (global/project) with Git versioning and optional GitHub Pages publishing."
     }
   ]
 }
