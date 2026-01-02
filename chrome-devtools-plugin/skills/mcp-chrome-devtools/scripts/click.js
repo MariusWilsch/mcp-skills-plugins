@@ -16,7 +16,7 @@ program
   .description('Clicks on the provided element')
   .option('--uid <value>', 'The uid of an element on the page from the page content snapshot (required)')
   .option('--dblClick', 'Set to true for double clicks. Default is false.')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find result message"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find result message"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();

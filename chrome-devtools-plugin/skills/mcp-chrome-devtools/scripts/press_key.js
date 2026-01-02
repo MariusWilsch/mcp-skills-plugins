@@ -16,7 +16,7 @@ program
   .name('press_key')
   .description('Press a key or key combination. Use this when other input methods like fill() cannot be used (e.g., keyboard shortcuts, navigation keys, or special key combinations).')
   .option('--key <value>', 'A key or a combination (e.g., "Enter", "Control+A", "Control++", "Control+Shift+R"). Modifiers: Control, Shift, Alt, Meta (required)')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find result"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find result"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();

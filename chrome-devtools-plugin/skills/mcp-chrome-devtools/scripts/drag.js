@@ -17,7 +17,7 @@ program
   .description('Drag an element onto another element')
   .option('--from-uid <value>', 'The uid of the element to drag (required)')
   .option('--to-uid <value>', 'The uid of the element to drop into (required)')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find drop zone"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find drop zone"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();

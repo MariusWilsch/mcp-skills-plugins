@@ -16,7 +16,7 @@ program
   .name('hover')
   .description('Hover over the provided element')
   .option('--uid <value>', 'The uid of an element on the page from the page content snapshot (required)')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find tooltip"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find tooltip"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();

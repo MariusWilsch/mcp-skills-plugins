@@ -16,7 +16,7 @@ program
   .name('fill_form')
   .description('Fill out multiple form elements at once')
   .option('--elements <items...>', 'Elements from snapshot to fill out. (required)')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find form state"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find form state"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();

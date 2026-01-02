@@ -17,7 +17,7 @@ program
   .description('Type text into a input, text area or select an option from a <select> element.')
   .option('--uid <value>', 'The uid of an element on the page from the page content snapshot (required)')
   .option('--value <value>', 'The value to fill in (required)')
-  .option('--context <query>', 'Filter post-action snapshot (e.g., "find form state"). Use "*" for full output.')
+  .requiredOption('--context <query>', 'REQUIRED: Filter post-action snapshot (e.g., "find form state"). Use "*" for full output.')
   .parse();
 
 const options = program.opts();
