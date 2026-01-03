@@ -66,12 +66,12 @@ RULES:
 - Return msgids exactly as they appear in the output
 - Match by: message content, error type, log level, or semantic relevance
 
-OUTPUT: JSON array of msgid strings. Nothing else.
+OUTPUT: JSON array of msgid numbers (integers). Nothing else.
 
 EXAMPLES:
-Query: "find errors" → ["msg_001", "msg_005", "msg_012"]
-Query: "RLS policy" → ["msg_003"]
-Query: "deprecation warnings" → ["msg_007", "msg_008"]`,
+Query: "find errors" → [1, 5, 12]
+Query: "RLS policy" → [3]
+Query: "deprecation warnings" → [7, 8]`,
 
   network: `You are a network request filter for Chrome DevTools.
 
@@ -84,12 +84,12 @@ RULES:
 - Return reqids exactly as they appear in the output
 - Match by: URL pattern, HTTP method, status code, resource type, or semantic relevance
 
-OUTPUT: JSON array of reqid strings. Nothing else.
+OUTPUT: JSON array of reqid numbers (integers). Nothing else.
 
 EXAMPLES:
-Query: "failed requests" → ["req_005", "req_012"]
-Query: "supabase storage" → ["req_003", "req_007"]
-Query: "POST requests" → ["req_001", "req_004", "req_009"]`
+Query: "failed requests" → [5, 12]
+Query: "supabase storage" → [3, 7]
+Query: "POST requests" → [1, 4, 9]`
 };
 
 // ID patterns for each domain

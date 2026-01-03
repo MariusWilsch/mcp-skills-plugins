@@ -14,7 +14,7 @@ import { callTool } from './mcp_client.js';
 program
   .name('get_console_message')
   .description('Gets a console message by its ID. You can get all messages by calling list_console_messages.')
-  .option('--msgid <value>', 'The msgid of a console message on the page from the listed console messages (required)', parseFloat)
+  .option('--msgid <value>', 'The msgid of a console message on the page from the listed console messages (required)')
   .addHelpText('after', '  Note: --msgid is required')
   .parse();
 
@@ -29,7 +29,12 @@ const options = program.opts();
   // Build arguments object
   const args = {};
   if (options.msgid !== undefined) {
-    args['msgid'] = options.msgid;
+    const parsed = parseInt(options.msgid, 10);
+    if (isNaN(parsed)) {
+      console.error(`Error: --msgid must be a number, got "${options.msgid}". Use the numeric ID from list_console_messages output (e.g., 7 not "msg_007").`);
+      process.exit(1);
+    }
+    args['msgid'] = parsed;
   }
 
 // Call the tool

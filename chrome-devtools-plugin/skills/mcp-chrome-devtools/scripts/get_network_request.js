@@ -14,7 +14,7 @@ import { callTool } from './mcp_client.js';
 program
   .name('get_network_request')
   .description('Gets a network request by an optional reqid, if omitted returns the currently selected request in the DevTools Network panel.')
-  .option('--reqid <value>', 'The reqid of the network request. If omitted returns the currently selected request in the DevTools Network panel.', parseFloat)
+  .option('--reqid <value>', 'The reqid of the network request. If omitted returns the currently selected request in the DevTools Network panel.')
   .parse();
 
 const options = program.opts();
@@ -22,7 +22,12 @@ const options = program.opts();
   // Build arguments object
   const args = {};
   if (options.reqid !== undefined) {
-    args['reqid'] = options.reqid;
+    const parsed = parseInt(options.reqid, 10);
+    if (isNaN(parsed)) {
+      console.error(`Error: --reqid must be a number, got "${options.reqid}". Use the numeric ID from list_network_requests output (e.g., 7 not "req_007").`);
+      process.exit(1);
+    }
+    args['reqid'] = parsed;
   }
 
 // Call the tool
