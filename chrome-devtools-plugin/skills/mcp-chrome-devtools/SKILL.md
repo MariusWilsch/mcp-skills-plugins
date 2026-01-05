@@ -57,6 +57,15 @@ node scripts/take_snapshot.js --context "*"
 - `list_console_messages.js` - Filter console messages by msgid
 - `list_network_requests.js` - Filter network requests by reqid
 
+**ID format for get_console_message and get_network_request:**
+The list commands return IDs like `msg_016` or `req_046`, but the get commands expect **numeric IDs only**:
+```bash
+# List shows: msg_016, req_046
+# Use: --msgid 16, --reqid 46
+node scripts/get_console_message.js --msgid 16
+node scripts/get_network_request.js --reqid 46
+```
+
 *Interaction tools (required):*
 - `click.js` - Filter post-click snapshot
 - `fill.js` - Filter post-fill snapshot
@@ -134,7 +143,7 @@ Capture page data and network activity:
 - [ ] **Wait for load:** `node scripts/wait_for.js --text "Data loaded" --timeout 10000`
 - [ ] **Get page snapshot:** `node scripts/take_snapshot.js --context "*" --verbose true --filePath snapshot.txt`
 - [ ] **List network calls:** `node scripts/list_network_requests.js --context "API calls" --resourceTypes fetch,xhr`
-- [ ] **Get specific request:** `node scripts/get_network_request.js --reqid request_123`
+- [ ] **Get specific request:** `node scripts/get_network_request.js --reqid 123`
 - [ ] **Extract via script:** `node scripts/evaluate_script.js --function "() => document.querySelector('.data').textContent"`
 
 **Expected Output:**
