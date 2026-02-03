@@ -20,16 +20,16 @@ program
 
 const options = program.opts();
 
-  // Validate required options
-  if (!options.pageIdx) {
+  // Validate required options (use undefined check, not falsy, since 0 is valid)
+  if (options.pageIdx === undefined) {
     console.error('Error: --pageIdx is required');
     process.exit(1);
   }
 
-  // Build arguments object
+  // Build arguments object (MCP server expects 'pageId', not 'pageIdx')
   const args = {};
   if (options.pageIdx !== undefined) {
-    args['pageIdx'] = options.pageIdx;
+    args['pageId'] = options.pageIdx;
   }
 
 // Call the tool
